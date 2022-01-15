@@ -17,7 +17,7 @@ author: Sanskar Sanjay Shah
 
 navbar-links:
   About Me: "aboutme"
-  Blog: "blog"
+  #Blog: "blog"
   Projects: "projects"
   Resume: "/assets/docs/cv.pdf"
   #  Resources:
