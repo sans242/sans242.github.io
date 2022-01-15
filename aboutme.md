@@ -9,7 +9,7 @@ IN PORGRESS
 ### Education
 
 <i class="fa fa-graduation-cap"></i>
-BTech in Computer Science and Engineering, 2019 - *present*<br>
+BTech in Civil Engineering, 2019 - *present*<br>
 *IIT Kanpur*
 
 <i class="fa fa-graduation-cap"></i>
