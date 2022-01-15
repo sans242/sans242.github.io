@@ -14,9 +14,9 @@ BTech in Civil Engineering, 2019 - *present*<br>
 
 <i class="fa fa-graduation-cap"></i>
 Senior Secondary Education, 2019<br>
-*MGN Public School, Jalandhar*
+*Sarvodaya Senior Secondary School, Kota*
 
 <i class="fa fa-graduation-cap"></i>
 Secondary Education, 2017<br>
-*MGN Public School, Jalandhar*
+*St. Joseph's Convent Senior Secondary School, Jalgaon*
 
