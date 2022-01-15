@@ -1,6 +1,6 @@
 # Personal Homepage
 
-Visit [gurbaaz27.github.io](https://gurbaaz27.github.io) for the hosted homepage.
+Visit [sans242.github.io](https://sans242.github.io) for the hosted homepage.
 
 # Credits
 
