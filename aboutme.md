@@ -1,10 +1,10 @@
 ---
 layout: page
 title: About me
-subtitle: A non-exhaustive snippet describing me.
+subtitle: A very exhaustive snippet describing me.
 ---
 
-IN PORGRESS
+IN PROGRESS
 
 ### Education
 
