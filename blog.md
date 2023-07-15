@@ -1,5 +1,5 @@
 ---
 layout: blog
 title: Thoughts
-subtitle: Penning down my thoughts nd trying to free the mind
+subtitle: Penning down my thoughts and trying to free the mind
 ---
