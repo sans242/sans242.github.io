@@ -9,7 +9,7 @@ IN PROGRESS
 ### Education
 
 <i class="fa fa-graduation-cap"></i>
-BTech in Civil Engineering, 2019 - *present*<br>
+BTech in Civil Engineering, 2019 - 2023<br>
 *IIT Kanpur*
 
 <i class="fa fa-graduation-cap"></i>
