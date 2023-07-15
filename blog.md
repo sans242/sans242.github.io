@@ -1,5 +1,5 @@
 ---
 layout: blog
-title: Blog
-subtitle: Penning down my thoughts and sharing some knowledge. Cause, why not?
+title: Thoughts
+subtitle: Penning down my thoughts nd trying to free the mind
 ---
