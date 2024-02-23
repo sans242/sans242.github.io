@@ -1,5 +1,5 @@
 ---
 layout: blog
-title: Thoughts
-subtitle: Just some thongs I am coming across
+title: Posts
+subtitle: Just some random titbits I am coming across
 ---
