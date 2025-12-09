@@ -31,7 +31,7 @@ subtitle: Execute sequence. Maintain order.
   }
   .task-item.completed .task-text {
     text-decoration: line-through;
-    color: #888;
+    color: #888 !important;
   }
   .checkbox-wrapper {
     margin-right: 15px;
@@ -56,8 +56,8 @@ subtitle: Execute sequence. Maintain order.
   .task-text {
     font-size: 1.1rem;
     flex-grow: 1;
-    color: #000 !important; /* Force black text */
-    font-weight: 500;
+    color: #000000 !important; /* Force black text */
+    font-weight: 600;
   }
   .progress-bar-container {
     background: #eee;
@@ -108,7 +108,8 @@ subtitle: Execute sequence. Maintain order.
   </div>
 </div>
 
-<div class="routine-container">
+<!-- Main Container - HIDDEN BY DEFAULT -->
+<div class="routine-container" style="display: none;">
   
   <div class="stats">
     <span id="completed-count">0</span> / <span id="total-count">0</span> completed
@@ -132,6 +133,7 @@ subtitle: Execute sequence. Maintain order.
   const authOverlay = document.getElementById('auth-overlay');
   const passwordInput = document.getElementById('password-input');
   const errorMsg = document.getElementById('error-msg');
+  const mainContainer = document.querySelector('.routine-container');
 
   function checkPassword() {
     const input = passwordInput.value;
@@ -144,6 +146,7 @@ subtitle: Execute sequence. Maintain order.
 
   function unlockPage() {
     authOverlay.style.display = 'none';
+    mainContainer.style.display = 'block';
     localStorage.setItem('routineAuth', 'true');
   }
 
@@ -154,7 +157,7 @@ subtitle: Execute sequence. Maintain order.
 
   // Check if they already logged in on this browser
   if (localStorage.getItem('routineAuth') === 'true') {
-    authOverlay.style.display = 'none';
+    unlockPage();
   }
 
   // --- ROUTINE LOGIC ---
