@@ -56,6 +56,8 @@ subtitle: Execute sequence. Maintain order.
   .task-text {
     font-size: 1.1rem;
     flex-grow: 1;
+    color: #000 !important; /* Force black text */
+    font-weight: 500;
   }
   .progress-bar-container {
     background: #eee;
@@ -75,52 +77,22 @@ subtitle: Execute sequence. Maintain order.
     text-align: center;
     margin-bottom: 20px;
     font-size: 0.9rem;
-    color: #666;
+    color: #aeaeae;
   }
-  
-  /* Password Protection Styles */
-  #auth-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: white;
-    z-index: 1000;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-  }
-  .auth-box {
-    text-align: center;
-    padding: 2rem;
-    background: #f9f9f9;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  }
-  .auth-input {
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    margin-bottom: 10px;
-    width: 200px;
-  }
-  .auth-btn {
-    padding: 10px 20px;
-    background: #4299e1;
-    color: white;
-    border: none;
-    border-radius: 5px;
+  .relock-btn {
+    display: block;
+    margin: 40px auto 10px;
+    background: transparent;
+    border: 1px solid #555;
+    color: #aeaeae;
+    padding: 5px 15px;
+    border-radius: 4px;
     cursor: pointer;
+    font-size: 0.8rem;
   }
-  .auth-btn:hover {
-    background: #3182ce;
-  }
-  .error-msg {
-    color: red;
-    margin-top: 10px;
-    display: none;
+  .relock-btn:hover {
+    background: #333;
+    color: #fff;
   }
 </style>
 
@@ -150,6 +122,8 @@ subtitle: Execute sequence. Maintain order.
     <!-- Tasks will be injected here -->
   </div>
 
+  <button onclick="relockProtocol()" class="relock-btn">🔒 Relock Protocol</button>
+
 </div>
 
 <script>
@@ -171,6 +145,11 @@ subtitle: Execute sequence. Maintain order.
   function unlockPage() {
     authOverlay.style.display = 'none';
     localStorage.setItem('routineAuth', 'true');
+  }
+
+  function relockProtocol() {
+    localStorage.removeItem('routineAuth');
+    location.reload();
   }
 
   // Check if they already logged in on this browser
