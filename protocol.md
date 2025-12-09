@@ -1,7 +1,7 @@
 ---
 layout: page
-title: Daily Routine
-subtitle: Stay consistent, stay awesome.
+title: Protocol
+subtitle: Execute sequence. Maintain order.
 ---
 
 <style>
@@ -128,11 +128,11 @@ subtitle: Stay consistent, stay awesome.
 <div id="auth-overlay">
   <div class="auth-box">
     <h3>Restricted Access</h3>
-    <p>Please enter the password to view your routine.</p>
-    <input type="password" id="password-input" class="auth-input" placeholder="Enter password">
+    <p>Enter authorization code to access protocol.</p>
+    <input type="password" id="password-input" class="auth-input" placeholder="Auth Code">
     <br>
-    <button onclick="checkPassword()" class="auth-btn">Unlock</button>
-    <p id="error-msg" class="error-msg">Incorrect password</p>
+    <button onclick="checkPassword()" class="auth-btn">Authorize</button>
+    <p id="error-msg" class="error-msg">Access Denied</p>
   </div>
 </div>
 
