@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Protocol Preview (Full Width)</title>
+    <title>Protocol Preview (Fix)</title>
     <style>
         body {
             font-family: 'Open Sans', "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -14,72 +14,88 @@
             margin: 0;
         }
 
-        /* FULL WIDTH LAYOUT */
+        /* FULL WIDTH LAYOUT RESET */
         .container-md,
         .container {
             max-width: 100% !important;
-            padding-left: 40px !important;
-            padding-right: 40px !important;
+            padding-left: 20px !important;
+            padding-right: 20px !important;
             margin: 0 !important;
         }
 
         .protocol-layout {
-            display: flex;
-            gap: 40px;
             font-family: 'Open Sans', sans-serif;
             color: #e0e0e0;
             margin-top: 20px;
             width: 100%;
+            position: relative;
         }
 
-        /* LEFT SIDEBAR */
-        .sidebar-section {
-            flex: 0 0 280px;
-            padding-right: 20px;
-            border-right: 1px solid #333;
+        /* TOP SECTION: REFS (Top Left) & HEADER */
+        .top-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
         }
 
-        /* RIGHT MAIN */
-        .main-section {
+        /* REFS CONTAINER */
+        .refs-container {
+            flex: 0 0 300px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+            z-index: 10;
+        }
+
+        /* HEADER ACTIONS */
+        .header-actions {
             flex: 1;
-            min-width: 0;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
         }
 
         h2.section-title {
-            font-size: 1.25rem;
-            margin-bottom: 20px;
+            font-size: 1rem;
+            margin-bottom: 10px;
             border-bottom: 1px solid #444;
             padding-bottom: 5px;
             color: #fff;
-            font-weight: 600;
+            font-weight: 700;
             margin-top: 0;
+            text-transform: uppercase;
         }
 
         /* LINKS */
         .add-link-form {
             display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 5px;
+            margin-bottom: 10px;
         }
 
         .link-input {
             background: #2d2d2d;
             border: 1px solid #444;
             color: #fff;
-            padding: 8px 12px;
+            padding: 6px;
             border-radius: 4px;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
+            width: 100%;
         }
 
         .add-btn {
             background: #008AFF;
             color: white;
             border: none;
-            padding: 8px;
+            padding: 0 10px;
             border-radius: 4px;
             cursor: pointer;
-            transition: background 0.2s;
+            font-size: 0.8rem;
+            white-space: nowrap;
         }
 
         .add-btn:hover {
@@ -89,38 +105,40 @@
         .ref-list {
             list-style: none;
             padding: 0;
+            margin: 0;
+            max-height: 200px;
+            overflow-y: auto;
         }
 
         .ref-item {
-            background: #1a1a1a;
+            background: #252525;
             border: 1px solid #333;
-            padding: 10px;
-            margin-bottom: 8px;
-            border-radius: 6px;
+            padding: 8px;
+            margin-bottom: 5px;
+            border-radius: 4px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: all 0.2s;
         }
 
         .ref-item:hover {
-            background: #252525;
+            background: #333;
         }
 
         .ref-link-wrapper {
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
         .ref-title {
-            display: block;
             font-weight: 600;
             color: #fff;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
         }
 
         .ref-url {
-            display: block;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: #008AFF;
             text-decoration: none;
             white-space: nowrap;
@@ -129,18 +147,12 @@
             max-width: 180px;
         }
 
-        .ref-url:hover {
-            text-decoration: underline;
-        }
-
         .delete-btn {
-            background: transparent;
-            border: none;
             color: #666;
+            background: none;
+            border: none;
             cursor: pointer;
-            font-size: 1.2rem;
-            padding: 0 5px;
-            line-height: 1;
+            font-size: 1rem;
         }
 
         .delete-btn:hover {
@@ -148,40 +160,43 @@
         }
 
 
-        /* LOG HEADER */
-        .log-header {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            margin-bottom: 20px;
-            background: transparent;
-        }
-
-        /* Custom Date Picker */
+        /* DATE PICKER */
         .date-wrapper {
             position: relative;
-            display: inline-block;
+            display: flex;
+            align-items: center;
+            background: #1a1a1a;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 5px;
+            z-index: 5;
         }
 
         .date-display-btn {
-            background: #1a1a1a;
-            border: 1px solid #444;
             color: #fff;
-            padding: 10px 20px;
-            border-radius: 8px;
+            padding: 5px 15px;
             font-size: 1.2rem;
             font-family: 'Montserrat', sans-serif;
-            cursor: pointer;
+            pointer-events: none;
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        .date-display-btn:hover {
-            border-color: #008AFF;
+        input[type="date"] {
+            background: transparent;
+            color: transparent;
+            border: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            cursor: pointer;
         }
 
-        input[type="date"] {
+        input[type="date"]::-webkit-calendar-picker-indicator {
             position: absolute;
             top: 0;
             left: 0;
@@ -189,31 +204,34 @@
             height: 100%;
             opacity: 0;
             cursor: pointer;
-            z-index: 2;
         }
+
 
         /* GRID */
         .log-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 20px;
+            width: 100%;
+            clear: both;
         }
 
-        @media (max-width: 992px) {
+        @media (max-width: 900px) {
             .log-grid {
                 grid-template-columns: 1fr;
             }
 
-            .sidebar-section {
-                flex: none;
-                width: 100%;
-                border-right: none;
-                border-bottom: 1px solid #333;
-                padding-bottom: 20px;
+            .top-section {
+                flex-direction: column;
             }
 
-            .protocol-layout {
-                flex-direction: column;
+            .refs-container {
+                width: 100%;
+            }
+
+            .header-actions {
+                width: 100%;
+                justify-content: flex-start;
             }
         }
 
@@ -224,6 +242,8 @@
             padding: 20px;
             display: flex;
             flex-direction: column;
+            position: relative;
+            z-index: 1;
         }
 
         .card-header {
@@ -254,10 +274,13 @@
             transition: all 0.3s;
             user-select: none;
             text-transform: uppercase;
+            position: relative;
+            z-index: 5;
         }
 
         .status-toggle:hover {
             border-color: #666;
+            color: #fff;
         }
 
         .status-toggle.success {
@@ -274,7 +297,7 @@
 
         textarea.category-note {
             width: 100%;
-            height: 200px;
+            height: 250px;
             background: #121212;
             border: 1px solid #333;
             border-radius: 4px;
@@ -285,6 +308,7 @@
             line-height: 1.5;
             resize: vertical;
             box-sizing: border-box;
+            z-index: 2;
         }
 
         textarea.category-note:focus {
@@ -302,6 +326,8 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 0.8rem;
+            position: relative;
+            z-index: 5;
         }
 
         .relock-btn:hover {
@@ -317,7 +343,7 @@
             width: 100%;
             height: 100%;
             background: #121212;
-            z-index: 1000;
+            z-index: 9999;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -376,23 +402,21 @@
 
         <div class="protocol-layout" style="display: none;">
 
-            <!-- LEFT SIDEBAR -->
-            <aside class="sidebar-section">
-                <h2 class="section-title">📚 Study & Refs</h2>
-
-                <div class="add-link-form">
-                    <input type="text" id="new-link-title" class="link-input" placeholder="Title">
-                    <input type="text" id="new-link-url" class="link-input" placeholder="URL">
-                    <button onclick="addNewLink()" class="add-btn">Add Link</button>
+            <!-- TOP SECTION -->
+            <div class="top-section">
+                <!-- REFS: Top Left -->
+                <div class="refs-container">
+                    <h2 class="section-title">📚 Study & Refs</h2>
+                    <div class="add-link-form">
+                        <input type="text" id="new-link-title" class="link-input" placeholder="Title">
+                        <input type="text" id="new-link-url" class="link-input" placeholder="URL">
+                        <button onclick="addNewLink()" class="add-btn">+</button>
+                    </div>
+                    <ul class="ref-list" id="ref-list"></ul>
                 </div>
 
-                <ul class="ref-list" id="ref-list"></ul>
-            </aside>
-
-            <!-- RIGHT MAIN -->
-            <main class="main-section">
-                <div class="log-header">
-
+                <!-- ACTIONS: Date Picker -->
+                <div class="header-actions">
                     <div class="date-wrapper">
                         <div class="date-display-btn">
                             <span style="opacity: 0.7;">📅</span>
@@ -400,47 +424,43 @@
                         </div>
                         <input type="date" id="note-date">
                     </div>
+                </div>
+            </div>
 
+            <!-- MAIN LOGS -->
+            <div class="log-grid">
+                <!-- PROBABILITY -->
+                <div class="log-card">
+                    <div class="card-header">
+                        <span class="card-title">Probability</span>
+                        <button class="status-toggle" id="toggle-prob" onclick="toggleStatus('probability')">SET
+                            STATUS</button>
+                    </div>
+                    <textarea id="note-probability" class="category-note"
+                        placeholder="Log probability progress..."></textarea>
                 </div>
 
-                <div class="log-grid">
-
-                    <!-- PROBABILITY -->
-                    <div class="log-card">
-                        <div class="card-header">
-                            <span class="card-title">Probability</span>
-                            <button class="status-toggle" id="toggle-prob" onclick="toggleStatus('probability')">SET
-                                STATUS</button>
-                        </div>
-                        <textarea id="note-probability" class="category-note"
-                            placeholder="Log probability progress..."></textarea>
+                <!-- DSA -->
+                <div class="log-card">
+                    <div class="card-header">
+                        <span class="card-title">DSA</span>
+                        <button class="status-toggle" id="toggle-dsa" onclick="toggleStatus('dsa')">SET STATUS</button>
                     </div>
-
-                    <!-- DSA -->
-                    <div class="log-card">
-                        <div class="card-header">
-                            <span class="card-title">DSA</span>
-                            <button class="status-toggle" id="toggle-dsa" onclick="toggleStatus('dsa')">SET
-                                STATUS</button>
-                        </div>
-                        <textarea id="note-dsa" class="category-note" placeholder="Log DSA progress..."></textarea>
-                    </div>
-
-                    <!-- PROJECT -->
-                    <div class="log-card">
-                        <div class="card-header">
-                            <span class="card-title">Project</span>
-                            <button class="status-toggle" id="toggle-project" onclick="toggleStatus('project')">SET
-                                STATUS</button>
-                        </div>
-                        <textarea id="note-project" class="category-note"
-                            placeholder="Log project updates..."></textarea>
-                    </div>
-
+                    <textarea id="note-dsa" class="category-note" placeholder="Log DSA progress..."></textarea>
                 </div>
 
-                <button onclick="relockProtocol()" class="relock-btn">🔒 Relock</button>
-            </main>
+                <!-- PROJECT -->
+                <div class="log-card">
+                    <div class="card-header">
+                        <span class="card-title">Project</span>
+                        <button class="status-toggle" id="toggle-project" onclick="toggleStatus('project')">SET
+                            STATUS</button>
+                    </div>
+                    <textarea id="note-project" class="category-note" placeholder="Log project updates..."></textarea>
+                </div>
+            </div>
+
+            <button onclick="relockProtocol()" class="relock-btn">🔒 Relock</button>
 
         </div>
     </div>
@@ -461,7 +481,7 @@
         }
         function unlockPage() {
             authOverlay.style.display = 'none';
-            mainContainer.style.display = 'flex';
+            mainContainer.style.display = 'block';
             localStorage.setItem('routineAuth', 'true');
             initPage();
         }
@@ -579,11 +599,12 @@
             const links = JSON.parse(localStorage.getItem('protocol_links')) || [];
             list.innerHTML = '';
             links.forEach((link, idx) => {
+                let displayUrl = link.url.length > 30 ? link.url.substring(0, 27) + '...' : link.url;
                 list.innerHTML += `
       <li class="ref-item">
         <div class="ref-link-wrapper">
           <span class="ref-title">${link.title}</span>
-          <a href="${link.url}" target="_blank" class="ref-url" title="${link.url}">${link.url}</a>
+          <a href="${link.url}" target="_blank" class="ref-url" title="${link.url}">${displayUrl}</a>
         </div>
         <button onclick="deleteLink(${idx})" class="delete-btn">×</button>
       </li>`;

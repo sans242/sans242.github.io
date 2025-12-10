@@ -5,181 +5,142 @@ subtitle: Execute sequence. Maintain order.
 ---
 
 <style>
-  /* FULL WIDTH LAYOUT */
+  /* FULL WIDTH LAYOUT RESET */
   .container-md, .container {
     max-width: 100% !important;
-    padding-left: 40px !important; 
-    padding-right: 40px !important;
+    padding-left: 20px !important; 
+    padding-right: 20px !important;
     margin: 0 !important;
   }
   
-  /* Reset page wrapper if it exists in theme */
-  .page-content {
-    width: 100%;
-  }
-
   .protocol-layout {
-    display: flex;
-    gap: 40px;
     font-family: 'Open Sans', sans-serif;
     color: #e0e0e0;
     margin-top: 20px;
     width: 100%;
-  }
-  
-  /* LEFT SIDEBAR: REFERENCES */
-  .sidebar-section {
-    flex: 0 0 280px;
-    padding-right: 20px;
-    border-right: 1px solid #333;
+    position: relative;
   }
 
-  /* RIGHT MAIN: DAILY LOG */
-  .main-section {
+  /* TOP SECTION: REFS (Top Left) & HEADER */
+  .top-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  /* REFS CONTAINER */
+  .refs-container {
+    flex: 0 0 300px; /* Fixed width */
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 15px;
+    z-index: 10;
+  }
+
+  /* MAIN HEADER AREA (Date Picker etc) */
+  .header-actions {
     flex: 1;
-    min-width: 0;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
   }
 
-  /* Section Headers */
   h2.section-title {
-    font-size: 1.25rem;
-    margin-bottom: 20px;
+    font-size: 1rem;
+    margin-bottom: 10px;
     border-bottom: 1px solid #444;
     padding-bottom: 5px;
     color: #fff;
-    font-weight: 600;
+    font-weight: 700;
     margin-top: 0;
+    text-transform: uppercase;
   }
 
-  /* DYNAMIC LINKS */
-  .add-link-form {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 20px;
+  /* LINKS */
+  .add-link-form { display: flex; gap: 5px; margin-bottom: 10px; }
+  .link-input { 
+    background: #2d2d2d; border: 1px solid #444; color: #fff; 
+    padding: 6px; border-radius: 4px; font-size: 0.8rem; width: 100%;
   }
-  .link-input {
-    background: #2d2d2d;
-    border: 1px solid #444;
-    color: #fff;
-    padding: 8px 12px;
-    border-radius: 4px;
-    font-size: 0.9rem;
-  }
-  .add-btn {
-    background: #008AFF;
-    color: white;
-    border: none;
-    padding: 8px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: background 0.2s;
+  .add-btn { 
+    background: #008AFF; color: white; border: none; padding: 0 10px; 
+    border-radius: 4px; cursor: pointer; font-size: 0.8rem; white-space: nowrap;
   }
   .add-btn:hover { background: #0077db; }
 
-  .ref-list {
-    list-style: none;
-    padding: 0;
+  .ref-list { list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto; }
+  .ref-item { 
+    background: #252525; border: 1px solid #333; padding: 8px; 
+    margin-bottom: 5px; border-radius: 4px; display: flex; 
+    justify-content: space-between; align-items: center; 
   }
-  .ref-item {
-    background: #1a1a1a;
-    border: 1px solid #333;
-    padding: 10px;
-    margin-bottom: 8px;
-    border-radius: 6px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: all 0.2s;
-  }
-  .ref-item:hover { background: #252525; }
+  .ref-item:hover { background: #333; }
   
-  .ref-link-wrapper {
-    overflow: hidden;
-  }
-  .ref-title {
-    display: block;
-    font-weight: 600;
-    color: #fff;
-    font-size: 0.95rem;
-  }
-  .ref-url {
-    display: block;
-    font-size: 0.75rem;
-    color: #008AFF;
-    text-decoration: none;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 180px;
-  }
-  .ref-url:hover { text-decoration: underline; }
+  .ref-link-wrapper { overflow: hidden; display: flex; flex-direction: column; }
+  .ref-title { font-weight: 600; color: #fff; font-size: 0.85rem; }
+  .ref-url { font-size: 0.7rem; color: #008AFF; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
   
-  .delete-btn {
-    background: transparent;
-    border: none;
-    color: #666;
-    cursor: pointer;
-    font-size: 1.2rem;
-    padding: 0 5px;
-    line-height: 1;
-  }
+  .delete-btn { color: #666; background: none; border: none; cursor: pointer; font-size: 1rem; }
   .delete-btn:hover { color: #ff4444; }
 
 
-  /* LOG CONTROLS & DATE */
-  .log-header {
-    display: flex; /* Align items horizontally */
-    align-items: center; /* Center items vertically */
-    justify-content: flex-end; /* Push to the right */
-    margin-bottom: 20px;
-    background: transparent;
-  }
-  
-  /* Custom Date Picker */
+  /* DATE PICKER (FIXED CLICKABILITY) */
   .date-wrapper {
     position: relative;
-    display: inline-block;
-  }
-  .date-display-btn {
+    display: flex;
+    align-items: center;
     background: #1a1a1a;
     border: 1px solid #444;
-    color: #fff;
-    padding: 10px 20px;
     border-radius: 8px;
+    padding: 5px;
+    z-index: 5;
+  }
+  .date-display-btn {
+    color: #fff;
+    padding: 5px 15px;
     font-size: 1.2rem;
     font-family: 'Montserrat', sans-serif;
-    cursor: pointer;
+    pointer-events: none; /* Let clicks pass through if needed, but input handles it */
     display: flex;
     align-items: center;
     gap: 10px;
   }
-  .date-display-btn:hover {
-    border-color: #008AFF;
-  }
-  /* Hide real input but cover the button */
+  /* The visible input */
   input[type="date"] {
+    background: transparent;
+    color: transparent;
+    border: none;
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 10;
+    cursor: pointer;
+  }
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
     opacity: 0;
     cursor: pointer;
-    z-index: 2;
   }
+
   
-  /* GRID FOR 3 CATEGORIES */
+  /* GRID FOR LOGS */
   .log-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 20px;
+    width: 100%;
+    clear: both;
   }
-  @media (max-width: 992px) {
+  @media (max-width: 900px) {
     .log-grid { grid-template-columns: 1fr; }
-    .sidebar-section { flex: none; width: 100%; border-right: none; border-bottom: 1px solid #333; padding-bottom: 20px; }
-    .protocol-layout { flex-direction: column; }
+    .top-section { flex-direction: column; }
+    .refs-container { width: 100%; }
+    .header-actions { width: 100%; justify-content: flex-start; }
   }
 
   .log-card {
@@ -189,6 +150,8 @@ subtitle: Execute sequence. Maintain order.
     padding: 20px;
     display: flex;
     flex-direction: column;
+    position: relative; /* Context for z-index */
+    z-index: 1;
   }
   .card-header {
     display: flex;
@@ -217,24 +180,16 @@ subtitle: Execute sequence. Maintain order.
     transition: all 0.3s;
     user-select: none;
     text-transform: uppercase;
+    position: relative;
+    z-index: 5;
   }
-  .status-toggle:hover {
-    border-color: #666;
-  }
-  .status-toggle.success {
-    background: #1c4526;
-    border-color: #2f855a;
-    color: #48bb78;
-  }
-  .status-toggle.fail {
-    background: #4a1c1c;
-    border-color: #9b2c2c;
-    color: #f56565;
-  }
+  .status-toggle:hover { border-color: #666; color: #fff; }
+  .status-toggle.success { background: #1c4526; border-color: #2f855a; color: #48bb78; }
+  .status-toggle.fail { background: #4a1c1c; border-color: #9b2c2c; color: #f56565; }
 
   textarea.category-note {
     width: 100%;
-    height: 200px; /* Taller notes */
+    height: 250px;
     background: #121212;
     border: 1px solid #333;
     border-radius: 4px;
@@ -244,11 +199,9 @@ subtitle: Execute sequence. Maintain order.
     font-size: 0.95rem;
     line-height: 1.5;
     resize: vertical;
+    z-index: 2;
   }
-  textarea.category-note:focus {
-    outline: none;
-    border-color: #008AFF;
-  }
+  textarea.category-note:focus { outline: none; border-color: #008AFF; }
 
   .relock-btn {
     display: block;
@@ -260,13 +213,15 @@ subtitle: Execute sequence. Maintain order.
     border-radius: 4px;
     cursor: pointer;
     font-size: 0.8rem;
+    position: relative;
+    z-index: 5;
   }
   .relock-btn:hover { border-color: #888; color: #888; }
   
   /* Auth styles */
   #auth-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: #121212; z-index: 1000;
+    background: #121212; z-index: 9999;
     display: flex; flex-direction: column;
     justify-content: center; align-items: center; color: #fff;
   }
@@ -298,69 +253,65 @@ subtitle: Execute sequence. Maintain order.
 
 <div class="protocol-layout" style="display: none;">
 
-  <!-- LEFT SIDEBAR: STUDY MATERIAL -->
-  <aside class="sidebar-section">
-    <h2 class="section-title">📚 Study & Refs</h2>
-    
-    <div class="add-link-form">
-      <input type="text" id="new-link-title" class="link-input" placeholder="Title (e.g. Blitzstein)">
-      <input type="text" id="new-link-url" class="link-input" placeholder="URL">
-      <button onclick="addNewLink()" class="add-btn">Add Link</button>
+  <!-- TOP AREA: REFS (Left) & HEADER (Right) -->
+  <div class="top-section">
+    <!-- REFS: Top Left -->
+    <div class="refs-container">
+      <h2 class="section-title">📚 Study & Refs</h2>
+      <div class="add-link-form">
+        <input type="text" id="new-link-title" class="link-input" placeholder="Title">
+        <input type="text" id="new-link-url" class="link-input" placeholder="URL">
+        <button onclick="addNewLink()" class="add-btn">+</button>
+      </div>
+      <ul class="ref-list" id="ref-list"></ul>
     </div>
 
-    <ul class="ref-list" id="ref-list">
-      <!-- Dynamic Links JS -->
-    </ul>
-  </aside>
-
-  <!-- RIGHT MAIN: DAILY LOG -->
-  <main class="main-section">
-    <div class="log-header">
-      
-      <!-- Custom Date Picker -->
+    <!-- HEADER ACTIONS: Date Picker -->
+    <div class="header-actions">
       <div class="date-wrapper">
         <div class="date-display-btn">
           <span style="opacity: 0.7;">📅</span>
-          <span id="formatted-date">Select Date</span>
+          <span id="formatted-date">11 December 2025</span>
         </div>
+        <!-- Input covers the wrapper cleanly -->
         <input type="date" id="note-date">
       </div>
+    </div>
+  </div>
 
+  <!-- MAIN LOGS: Full Width Below -->
+  <div class="log-grid">
+    
+    <!-- PROBABILITY -->
+    <div class="log-card">
+      <div class="card-header">
+        <span class="card-title">Probability</span>
+        <button class="status-toggle" id="toggle-prob" onclick="toggleStatus('probability')">SET STATUS</button>
+      </div>
+      <textarea id="note-probability" class="category-note" placeholder="Log probability progress..."></textarea>
     </div>
 
-    <div class="log-grid">
-      
-      <!-- CARD 1: PROBABILITY -->
-      <div class="log-card">
-        <div class="card-header">
-          <span class="card-title">Probability</span>
-          <button class="status-toggle" id="toggle-prob" onclick="toggleStatus('probability')" title="Click to change status">SET STATUS</button>
-        </div>
-        <textarea id="note-probability" class="category-note" placeholder="Log probability progress..."></textarea>
+    <!-- DSA -->
+    <div class="log-card">
+      <div class="card-header">
+        <span class="card-title">DSA</span>
+        <button class="status-toggle" id="toggle-dsa" onclick="toggleStatus('dsa')">SET STATUS</button>
       </div>
-
-      <!-- CARD 2: DSA -->
-      <div class="log-card">
-        <div class="card-header">
-          <span class="card-title">DSA</span>
-          <button class="status-toggle" id="toggle-dsa" onclick="toggleStatus('dsa')" title="Click to change status">SET STATUS</button>
-        </div>
-        <textarea id="note-dsa" class="category-note" placeholder="Log DSA progress..."></textarea>
-      </div>
-
-      <!-- CARD 3: PROJECT -->
-      <div class="log-card">
-        <div class="card-header">
-          <span class="card-title">Project</span>
-          <button class="status-toggle" id="toggle-project" onclick="toggleStatus('project')" title="Click to change status">SET STATUS</button>
-        </div>
-        <textarea id="note-project" class="category-note" placeholder="Log project updates..."></textarea>
-      </div>
-
+      <textarea id="note-dsa" class="category-note" placeholder="Log DSA progress..."></textarea>
     </div>
 
-    <button onclick="relockProtocol()" class="relock-btn">🔒 Relock</button>
-  </main>
+    <!-- PROJECT -->
+    <div class="log-card">
+      <div class="card-header">
+        <span class="card-title">Project</span>
+        <button class="status-toggle" id="toggle-project" onclick="toggleStatus('project')">SET STATUS</button>
+      </div>
+      <textarea id="note-project" class="category-note" placeholder="Log project updates..."></textarea>
+    </div>
+
+  </div>
+
+  <button onclick="relockProtocol()" class="relock-btn">🔒 Relock</button>
   
 </div>
 
@@ -380,7 +331,7 @@ subtitle: Execute sequence. Maintain order.
   }
   function unlockPage() {
     authOverlay.style.display = 'none';
-    mainContainer.style.display = 'flex';
+    mainContainer.style.display = 'block'; // Changed to block for flow layout
     localStorage.setItem('routineAuth', 'true');
     initPage();
   }
@@ -400,7 +351,6 @@ subtitle: Execute sequence. Maintain order.
   const dateInput = document.getElementById('note-date');
   const dateDisplay = document.getElementById('formatted-date');
   
-  // Elements
   const els = {
     probability: { note: document.getElementById('note-probability'), status: document.getElementById('toggle-prob') },
     dsa: { note: document.getElementById('note-dsa'), status: document.getElementById('toggle-dsa') },
@@ -409,7 +359,6 @@ subtitle: Execute sequence. Maintain order.
 
   function initDate() {
     const today = new Date();
-    // Default to today
     setDate(today);
   }
 
@@ -425,13 +374,11 @@ subtitle: Execute sequence. Maintain order.
   }
 
   function updateDateDisplay(dateObj) {
-    // Format: 11 December 2025
     const options = { day: 'numeric', month: 'long', year: 'numeric' };
     dateDisplay.textContent = dateObj.toLocaleDateString('en-GB', options);
   }
 
   dateInput.addEventListener('change', (e) => {
-    // Handle manual date picker change
     if(e.target.value) {
         const parts = e.target.value.split('-');
         const newDate = new Date(parts[0], parts[1]-1, parts[2]);
@@ -440,14 +387,12 @@ subtitle: Execute sequence. Maintain order.
     }
   });
 
-  // --- DATA SAVING/LOADING ---
+  // --- DATA ---
   function getNoteKey(date) { return `protocol_data_${date}`; }
 
   function loadDataForDate(date) {
     const json = localStorage.getItem(getNoteKey(date));
     const data = json ? JSON.parse(json) : {};
-    
-    // Categories: probability, dsa, project
     ['probability', 'dsa', 'project'].forEach(cat => {
       const entry = data[cat] || { text: '', status: 'neutral' };
       els[cat].note.value = entry.text || '';
@@ -458,31 +403,23 @@ subtitle: Execute sequence. Maintain order.
   function saveData(date) {
     const data = {};
     ['probability', 'dsa', 'project'].forEach(cat => {
-      const currentStatus = els[cat].status.getAttribute('data-status') || 'neutral';
       data[cat] = {
         text: els[cat].note.value,
-        status: currentStatus
+        status: els[cat].status.getAttribute('data-status') || 'neutral'
       };
     });
     localStorage.setItem(getNoteKey(date), JSON.stringify(data));
   }
 
-  // Saving triggers
   ['probability', 'dsa', 'project'].forEach(cat => {
     els[cat].note.addEventListener('input', () => saveData(dateInput.value));
   });
 
-  // --- STATUS TOGGLES ---
+  // --- TOGGLES ---
   function toggleStatus(cat) {
     const btn = els[cat].status;
     let current = btn.getAttribute('data-status') || 'neutral';
-    
-    // Cycle: neutral -> success -> fail -> neutral
-    let next = 'neutral';
-    if (current === 'neutral') next = 'success';
-    else if (current === 'success') next = 'fail';
-    else if (current === 'fail') next = 'neutral';
-    
+    let next = current === 'neutral' ? 'success' : (current === 'success' ? 'fail' : 'neutral');
     renderStatus(cat, next);
     saveData(dateInput.value);
   }
@@ -498,11 +435,11 @@ subtitle: Execute sequence. Maintain order.
     } else if (status === 'success') {
       btn.textContent = 'RIGHT';
       btn.classList.add('success');
-      btn.style.color = ''; // use class color
+      btn.style.color = '';
     } else if (status === 'fail') {
       btn.textContent = 'WRONG';
       btn.classList.add('fail');
-      btn.style.color = ''; // use class color
+      btn.style.color = '';
     }
   }
 
@@ -511,13 +448,14 @@ subtitle: Execute sequence. Maintain order.
     const list = document.getElementById('ref-list');
     const links = JSON.parse(localStorage.getItem('protocol_links')) || [];
     list.innerHTML = '';
-    
     links.forEach((link, idx) => {
+      // Truncate URL just in case
+      let displayUrl = link.url.length > 30 ? link.url.substring(0, 27) + '...' : link.url;
       list.innerHTML += `
       <li class="ref-item">
         <div class="ref-link-wrapper">
           <span class="ref-title">${link.title}</span>
-          <a href="${link.url}" target="_blank" class="ref-url" title="${link.url}">${link.url}</a>
+          <a href="${link.url}" target="_blank" class="ref-url" title="${link.url}">${displayUrl}</a>
         </div>
         <button onclick="deleteLink(${idx})" class="delete-btn">×</button>
       </li>`;
@@ -528,7 +466,6 @@ subtitle: Execute sequence. Maintain order.
     let u = document.getElementById('new-link-url').value.trim();
     if(!t || !u) return;
     if(!u.startsWith('http')) u = 'https://' + u;
-    
     const links = JSON.parse(localStorage.getItem('protocol_links')) || [];
     links.push({ title: t, url: u });
     localStorage.setItem('protocol_links', JSON.stringify(links));
