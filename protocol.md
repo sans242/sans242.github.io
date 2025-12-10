@@ -5,48 +5,52 @@ subtitle: Execute sequence. Maintain order.
 ---
 
 <style>
-  /* FULL WIDTH LAYOUT RESET */
+  /* FULL WIDTH RESET */
   .container-md, .container {
     max-width: 100% !important;
-    padding-left: 20px !important; 
-    padding-right: 20px !important;
+    padding: 0 !important;
     margin: 0 !important;
+    width: 100% !important;
   }
   
+  /* Remove default margins if any from page-content */
+  .page-content { overflow-x: hidden; }
+
+  /* MAIN LAYOUT WRAPPER */
   .protocol-layout {
     font-family: 'Open Sans', sans-serif;
     color: #e0e0e0;
     margin-top: 20px;
     width: 100%;
     position: relative;
+    /* Create space for the fixed sidebar */
+    padding-left: 320px; 
+    padding-right: 40px;
+    box-sizing: border-box;
   }
 
-  /* TOP SECTION: REFS (Top Left) & HEADER */
-  .top-section {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 30px;
-    flex-wrap: wrap;
-    gap: 20px;
-  }
-
-  /* REFS CONTAINER */
+  /* REFS: FIXED SIDEBAR LEFT */
   .refs-container {
-    flex: 0 0 300px; /* Fixed width */
+    position: fixed;
+    top: 100px; /* Adjust based on navbar height, typically ~80px */
+    left: 20px;
+    width: 280px;
     background: #1a1a1a;
     border: 1px solid #333;
     border-radius: 8px;
     padding: 15px;
-    z-index: 10;
+    z-index: 100;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
   }
 
-  /* MAIN HEADER AREA (Date Picker etc) */
-  .header-actions {
-    flex: 1;
+  /* HEADER & DATE */
+  .header-section {
     display: flex;
     justify-content: flex-end;
-    align-items: center;
+    margin-bottom: 30px;
+    padding-top: 20px;
   }
 
   h2.section-title {
@@ -60,161 +64,163 @@ subtitle: Execute sequence. Maintain order.
     text-transform: uppercase;
   }
 
-  /* LINKS */
-  .add-link-form { display: flex; gap: 5px; margin-bottom: 10px; }
+  /* LINKS FORM */
+  .add-link-form { display: flex; gap: 5px; margin-bottom: 15px; }
   .link-input { 
     background: #2d2d2d; border: 1px solid #444; color: #fff; 
-    padding: 6px; border-radius: 4px; font-size: 0.8rem; width: 100%;
+    padding: 8px; border-radius: 4px; font-size: 0.85rem; width: 100%;
   }
   .add-btn { 
-    background: #008AFF; color: white; border: none; padding: 0 10px; 
-    border-radius: 4px; cursor: pointer; font-size: 0.8rem; white-space: nowrap;
+    background: #008AFF; color: white; border: none; padding: 0 12px; 
+    border-radius: 4px; cursor: pointer; font-size: 1rem;
   }
   .add-btn:hover { background: #0077db; }
 
-  .ref-list { list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto; }
+  .ref-list { list-style: none; padding: 0; margin: 0; }
   .ref-item { 
-    background: #252525; border: 1px solid #333; padding: 8px; 
-    margin-bottom: 5px; border-radius: 4px; display: flex; 
+    background: #252525; border: 1px solid #333; padding: 10px; 
+    margin-bottom: 8px; border-radius: 4px; display: flex; 
     justify-content: space-between; align-items: center; 
   }
-  .ref-item:hover { background: #333; }
+  .ref-item:hover { background: #333; border-color: #555; }
   
   .ref-link-wrapper { overflow: hidden; display: flex; flex-direction: column; }
-  .ref-title { font-weight: 600; color: #fff; font-size: 0.85rem; }
-  .ref-url { font-size: 0.7rem; color: #008AFF; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+  .ref-title { font-weight: 600; color: #fff; font-size: 0.9rem; }
+  .ref-url { font-size: 0.75rem; color: #008AFF; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 190px; }
   
-  .delete-btn { color: #666; background: none; border: none; cursor: pointer; font-size: 1rem; }
+  .delete-btn { color: #666; background: none; border: none; cursor: pointer; font-size: 1.1rem; }
   .delete-btn:hover { color: #ff4444; }
 
 
-  /* DATE PICKER (FIXED CLICKABILITY) */
+  /* DATE PICKER */
   .date-wrapper {
     position: relative;
     display: flex;
     align-items: center;
     background: #1a1a1a;
     border: 1px solid #444;
+    min-width: 250px;
     border-radius: 8px;
-    padding: 5px;
-    z-index: 5;
-  }
-  .date-display-btn {
-    color: #fff;
-    padding: 5px 15px;
-    font-size: 1.2rem;
-    font-family: 'Montserrat', sans-serif;
-    pointer-events: none; /* Let clicks pass through if needed, but input handles it */
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  /* The visible input */
-  input[type="date"] {
-    background: transparent;
-    color: transparent;
-    border: none;
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
+    padding: 0; /* Important for full coverage */
     z-index: 10;
     cursor: pointer;
   }
+  .date-display-btn {
+    color: #fff;
+    padding: 10px 20px;
+    font-size: 1.2rem;
+    font-family: 'Montserrat', sans-serif;
+    pointer-events: none; /* Text shouldn't block */
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+  }
+  input[type="date"] {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    opacity: 0;
+    z-index: 20; /* TOP LAYER */
+    cursor: pointer;
+    font-size: 1.2rem; /* Make the target area nice */
+  }
+  /* Fix for some browsers ignoring opacity on inputs */
   input[type="date"]::-webkit-calendar-picker-indicator {
     position: absolute;
     top: 0; left: 0;
     width: 100%; height: 100%;
     opacity: 0;
     cursor: pointer;
+    background: transparent;
   }
 
   
-  /* GRID FOR LOGS */
+  /* GRID LOGS */
   .log-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
+    gap: 30px;
     width: 100%;
-    clear: both;
   }
-  @media (max-width: 900px) {
+  /* Mobile stack */
+  @media (max-width: 1100px) {
+    .protocol-layout { padding-left: 20px; } /* Reset padding */
+    .refs-container { position: relative; top: 0; left: 0; width: 100%; margin-bottom: 20px; max-height: none; }
     .log-grid { grid-template-columns: 1fr; }
-    .top-section { flex-direction: column; }
-    .refs-container { width: 100%; }
-    .header-actions { width: 100%; justify-content: flex-start; }
   }
 
   .log-card {
     background: #1a1a1a;
     border: 1px solid #333;
     border-radius: 8px;
-    padding: 20px;
+    padding: 25px;
     display: flex;
     flex-direction: column;
-    position: relative; /* Context for z-index */
-    z-index: 1;
+    min-height: 400px;
   }
   .card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
   }
   .card-title {
     font-weight: 700;
     color: #fff;
     text-transform: uppercase;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     letter-spacing: 0.05em;
   }
   
-  /* STATUS TOGGLE */
+  /* STATUS */
   .status-toggle {
     cursor: pointer;
-    font-size: 0.75rem;
-    padding: 6px 12px;
+    font-size: 0.8rem;
+    padding: 8px 16px;
     border-radius: 4px;
     background: #2d2d2d;
-    color: #888;
+    color: #aeaeae;
     border: 1px solid #444;
-    font-weight: 600;
-    transition: all 0.3s;
+    font-weight: 700;
+    transition: all 0.2s;
     user-select: none;
     text-transform: uppercase;
+    z-index: 30; /* Ensure clickability */
     position: relative;
-    z-index: 5;
   }
-  .status-toggle:hover { border-color: #666; color: #fff; }
+  .status-toggle:hover { background: #383838; color: #fff; border-color: #666; }
   .status-toggle.success { background: #1c4526; border-color: #2f855a; color: #48bb78; }
   .status-toggle.fail { background: #4a1c1c; border-color: #9b2c2c; color: #f56565; }
 
   textarea.category-note {
     width: 100%;
-    height: 250px;
+    flex-grow: 1; /* Fill remaining card space */
     background: #121212;
     border: 1px solid #333;
-    border-radius: 4px;
-    padding: 12px;
+    border-radius: 6px;
+    padding: 15px;
     color: #ddd;
     font-family: 'Courier New', monospace;
-    font-size: 0.95rem;
-    line-height: 1.5;
-    resize: vertical;
+    font-size: 1rem;
+    line-height: 1.6;
+    resize: none; /* Clean look */
     z-index: 2;
   }
   textarea.category-note:focus { outline: none; border-color: #008AFF; }
 
   .relock-btn {
     display: block;
-    margin: 40px auto 10px;
+    margin: 40px auto;
     background: transparent;
     border: 1px solid #555;
     color: #666;
-    padding: 5px 15px;
+    padding: 8px 20px;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
+    z-index: 30;
     position: relative;
-    z-index: 5;
   }
   .relock-btn:hover { border-color: #888; color: #888; }
   
@@ -253,35 +259,29 @@ subtitle: Execute sequence. Maintain order.
 
 <div class="protocol-layout" style="display: none;">
 
-  <!-- TOP AREA: REFS (Left) & HEADER (Right) -->
-  <div class="top-section">
-    <!-- REFS: Top Left -->
-    <div class="refs-container">
-      <h2 class="section-title">📚 Study & Refs</h2>
-      <div class="add-link-form">
-        <input type="text" id="new-link-title" class="link-input" placeholder="Title">
-        <input type="text" id="new-link-url" class="link-input" placeholder="URL">
-        <button onclick="addNewLink()" class="add-btn">+</button>
-      </div>
-      <ul class="ref-list" id="ref-list"></ul>
+  <!-- REFS: FIXED LEFT SIDEBAR -->
+  <div class="refs-container">
+    <h2 class="section-title">📚 Study & Refs</h2>
+    <div class="add-link-form">
+      <input type="text" id="new-link-title" class="link-input" placeholder="Title">
+      <input type="text" id="new-link-url" class="link-input" placeholder="URL">
+      <button onclick="addNewLink()" class="add-btn">+</button>
     </div>
+    <ul class="ref-list" id="ref-list"></ul>
+  </div>
 
-    <!-- HEADER ACTIONS: Date Picker -->
-    <div class="header-actions">
-      <div class="date-wrapper">
-        <div class="date-display-btn">
-          <span style="opacity: 0.7;">📅</span>
-          <span id="formatted-date">11 December 2025</span>
-        </div>
-        <!-- Input covers the wrapper cleanly -->
-        <input type="date" id="note-date">
+  <!-- MAIN CONTENT -->
+  <div class="header-section">
+    <div class="date-wrapper">
+      <div class="date-display-btn">
+        <span style="opacity: 0.7;">📅</span>
+        <span id="formatted-date">Loading date...</span>
       </div>
+      <input type="date" id="note-date">
     </div>
   </div>
 
-  <!-- MAIN LOGS: Full Width Below -->
   <div class="log-grid">
-    
     <!-- PROBABILITY -->
     <div class="log-card">
       <div class="card-header">
@@ -308,11 +308,9 @@ subtitle: Execute sequence. Maintain order.
       </div>
       <textarea id="note-project" class="category-note" placeholder="Log project updates..."></textarea>
     </div>
-
   </div>
 
   <button onclick="relockProtocol()" class="relock-btn">🔒 Relock</button>
-  
 </div>
 
 <script>
@@ -331,7 +329,7 @@ subtitle: Execute sequence. Maintain order.
   }
   function unlockPage() {
     authOverlay.style.display = 'none';
-    mainContainer.style.display = 'block'; // Changed to block for flow layout
+    mainContainer.style.display = 'block';
     localStorage.setItem('routineAuth', 'true');
     initPage();
   }
@@ -347,7 +345,7 @@ subtitle: Execute sequence. Maintain order.
     initDate();
   }
 
-  // --- DATE & NOTES LOGIC ---
+  // --- DATE LOGIC ---
   const dateInput = document.getElementById('note-date');
   const dateDisplay = document.getElementById('formatted-date');
   
@@ -359,33 +357,38 @@ subtitle: Execute sequence. Maintain order.
 
   function initDate() {
     const today = new Date();
-    setDate(today);
-  }
-
-  function setDate(dateObj) {
-    const yyyy = dateObj.getFullYear();
-    const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const dd = String(dateObj.getDate()).padStart(2, '0');
-    const dateStr = `${yyyy}-${mm}-${dd}`;
+    // Ensure we set the input value correctly to today YYYY-MM-DD
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const isoDate = `${yyyy}-${mm}-${dd}`;
     
-    dateInput.value = dateStr;
-    updateDateDisplay(dateObj);
-    loadDataForDate(dateStr);
+    dateInput.value = isoDate;
+    updateDateDisplay(isoDate);
+    loadDataForDate(isoDate);
   }
 
-  function updateDateDisplay(dateObj) {
+  function updateDateDisplay(dateString) {
+    if(!dateString) return;
+    // Create date from YYYY-MM-DD (append time to avoid UTC shift)
+    const dateObj = new Date(dateString + 'T12:00:00'); 
+    
     const options = { day: 'numeric', month: 'long', year: 'numeric' };
     dateDisplay.textContent = dateObj.toLocaleDateString('en-GB', options);
   }
 
-  dateInput.addEventListener('change', (e) => {
-    if(e.target.value) {
-        const parts = e.target.value.split('-');
-        const newDate = new Date(parts[0], parts[1]-1, parts[2]);
-        updateDateDisplay(newDate);
-        loadDataForDate(e.target.value);
+  // Handle Input Changes
+  function onDateChange(e) {
+    const val = e.target.value;
+    if(val) {
+        updateDateDisplay(val);
+        loadDataForDate(val);
     }
-  });
+  }
+  
+  // Listen for both input (immediate) and change (commit)
+  dateInput.addEventListener('input', onDateChange);
+  dateInput.addEventListener('change', onDateChange);
 
   // --- DATA ---
   function getNoteKey(date) { return `protocol_data_${date}`; }
@@ -400,7 +403,10 @@ subtitle: Execute sequence. Maintain order.
     });
   }
 
-  function saveData(date) {
+  function saveData() {
+    const date = dateInput.value;
+    if(!date) return;
+    
     const data = {};
     ['probability', 'dsa', 'project'].forEach(cat => {
       data[cat] = {
@@ -412,7 +418,7 @@ subtitle: Execute sequence. Maintain order.
   }
 
   ['probability', 'dsa', 'project'].forEach(cat => {
-    els[cat].note.addEventListener('input', () => saveData(dateInput.value));
+    els[cat].note.addEventListener('input', saveData);
   });
 
   // --- TOGGLES ---
@@ -421,7 +427,7 @@ subtitle: Execute sequence. Maintain order.
     let current = btn.getAttribute('data-status') || 'neutral';
     let next = current === 'neutral' ? 'success' : (current === 'success' ? 'fail' : 'neutral');
     renderStatus(cat, next);
-    saveData(dateInput.value);
+    saveData();
   }
 
   function renderStatus(cat, status) {
@@ -431,7 +437,7 @@ subtitle: Execute sequence. Maintain order.
     
     if (status === 'neutral') {
       btn.textContent = 'SET STATUS';
-      btn.style.color = '#888';
+      btn.style.color = '#aeaeae';
     } else if (status === 'success') {
       btn.textContent = 'RIGHT';
       btn.classList.add('success');
@@ -449,7 +455,6 @@ subtitle: Execute sequence. Maintain order.
     const links = JSON.parse(localStorage.getItem('protocol_links')) || [];
     list.innerHTML = '';
     links.forEach((link, idx) => {
-      // Truncate URL just in case
       let displayUrl = link.url.length > 30 ? link.url.substring(0, 27) + '...' : link.url;
       list.innerHTML += `
       <li class="ref-item">
