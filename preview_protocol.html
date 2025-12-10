@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Protocol Preview (Flex)</title>
+    <title>Protocol Preview (Save + Spacing)</title>
     <style>
         body {
             font-family: 'Open Sans', "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -156,6 +156,16 @@
             display: flex;
             justify-content: flex-end;
             margin-bottom: 20px;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .save-indicator {
+            color: #48bb78;
+            font-size: 0.9rem;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.5s;
         }
 
         /* DATE PICKER CONTAINER */
@@ -166,6 +176,12 @@
             border: 1px solid #444;
             border-radius: 8px;
             padding: 10px 15px;
+            cursor: pointer;
+            min-width: 200px;
+        }
+
+        .date-container:hover {
+            border-color: #666;
         }
 
         .date-text {
@@ -176,6 +192,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            justify-content: center;
         }
 
         #note-date {
@@ -186,7 +203,8 @@
             height: 100%;
             opacity: 0;
             cursor: pointer;
-            z-index: 10;
+            z-index: 100;
+            font-size: 0;
         }
 
         /* LOGS GRID */
@@ -229,7 +247,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
         .card-title {
@@ -238,13 +256,14 @@
             text-transform: uppercase;
             font-size: 1.1rem;
             letter-spacing: 0.05em;
+            margin-right: 15px;
         }
 
         .status-btn {
             background: #2d2d2d;
             color: #aeaeae;
             border: 1px solid #444;
-            padding: 6px 12px;
+            padding: 8px 16px;
             border-radius: 4px;
             font-size: 0.8rem;
             font-weight: 700;
@@ -254,6 +273,8 @@
             transition: all 0.2s;
             position: relative;
             z-index: 5;
+            white-space: nowrap;
+            margin-left: auto;
         }
 
         .status-btn:hover {
@@ -285,12 +306,42 @@
             font-size: 0.95rem;
             line-height: 1.6;
             resize: none;
+            margin-bottom: 10px;
             box-sizing: border-box;
         }
 
         textarea.log-input:focus {
             outline: none;
             border-color: #008AFF;
+        }
+
+        /* explicit save button */
+        .save-bar {
+            width: 100%;
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 15px;
+        }
+
+        .save-btn {
+            background: #48bb78;
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .save-btn:hover {
+            background: #38a169;
+        }
+
+        .save-btn:active {
+            transform: translateY(1px);
         }
 
         .relock-link {
@@ -391,11 +442,14 @@
         <main class="main-column">
 
             <div class="header-controls">
+                <span class="save-indicator" id="auto-save-msg">Autosaved</span>
                 <div class="date-container">
+                    <!-- Text for display -->
                     <div class="date-text">
                         <span>📅</span>
                         <span id="date-display-text">Select Date</span>
                     </div>
+                    <!-- Invisible top-layer input for click handling -->
                     <input type="date" id="note-date">
                 </div>
             </div>
@@ -429,6 +483,11 @@
                     </div>
                     <textarea class="log-input" id="txt-project" placeholder="Log progress..."></textarea>
                 </div>
+            </div>
+
+            <!-- Manual Save Button -->
+            <div class="save-bar">
+                <button class="save-btn" onclick="saveLogDataForced()">SAVE LOGS</button>
             </div>
 
             <a onclick="relockProtocol()" class="relock-link">🔒 Relock Session</a>
@@ -498,6 +557,10 @@
                     loadLogData(val);
                 }
             });
+
+            document.querySelector('.date-container').addEventListener('click', () => {
+                try { dateInput.showPicker(); } catch (e) { }
+            });
         }
 
         function updateDateUI(dateStr) {
@@ -533,7 +596,26 @@
                 };
             });
             localStorage.setItem(getStorageKey(date), JSON.stringify(data));
+            showAutoSave();
         }
+
+        function saveLogDataForced() {
+            saveLogData();
+            const ind = document.getElementById('auto-save-msg');
+            ind.textContent = "Saved Successfully!";
+            ind.style.opacity = '1';
+            ind.style.color = '#48bb78';
+            setTimeout(() => { ind.style.opacity = '0'; }, 2000);
+        }
+
+        function showAutoSave() {
+            const ind = document.getElementById('auto-save-msg');
+            ind.textContent = "Autosaved";
+            ind.style.color = '#666';
+            ind.style.opacity = '1';
+            setTimeout(() => { ind.style.opacity = '0'; }, 1000);
+        }
+
         Object.values(els).forEach(obj => {
             obj.txt.addEventListener('input', saveLogData);
         });
@@ -542,7 +624,11 @@
         function toggleStatus(cat) {
             const btn = els[cat].btn;
             const current = btn.getAttribute('data-status') || 'neutral';
-            let next = current === 'neutral' ? 'success' : (current === 'success' ? 'fail' : 'neutral');
+            let next = 'neutral';
+            if (current === 'neutral') next = 'success';
+            else if (current === 'success') next = 'fail';
+            else if (current === 'fail') next = 'neutral';
+
             renderStatusBtn(cat, next);
             saveLogData();
         }

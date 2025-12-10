@@ -25,7 +25,7 @@ subtitle: Execute sequence. Maintain order.
 
   /* LEFT SIDEBAR (Refs) */
   .sidebar-column {
-    flex: 0 0 280px; /* Fixed width */
+    flex: 0 0 280px;
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -36,14 +36,14 @@ subtitle: Execute sequence. Maintain order.
     border: 1px solid #333;
     border-radius: 8px;
     padding: 20px;
-    position: sticky; /* Sticky so it stays while scrolling logs */
+    position: sticky;
     top: 20px;
   }
 
   /* RIGHT CONTENT (Logs) */
   .main-column {
     flex: 1;
-    min-width: 0; /* Prevent flex overflow */
+    min-width: 0;
   }
 
   /* SECTION TITLES */
@@ -85,8 +85,18 @@ subtitle: Execute sequence. Maintain order.
   /* HEADER & DATE */
   .header-controls {
     display: flex;
-    justify-content: flex-end; /* Align date to right */
+    justify-content: flex-end;
     margin-bottom: 20px;
+    align-items: center;
+    gap: 20px;
+  }
+  
+  .save-indicator {
+    color: #48bb78;
+    font-size: 0.9rem;
+    font-weight: 600;
+    opacity: 0;
+    transition: opacity 0.5s;
   }
 
   /* DATE PICKER CONTAINER */
@@ -97,24 +107,31 @@ subtitle: Execute sequence. Maintain order.
     border: 1px solid #444;
     border-radius: 8px;
     padding: 10px 15px;
+    cursor: pointer;
+    min-width: 200px;
   }
+  .date-container:hover { border-color: #666; }
+
   .date-text {
     color: #fff;
     font-size: 1.1rem;
     font-family: 'Montserrat', sans-serif;
-    pointer-events: none; /* Let clicks pass to input */
+    pointer-events: none; /* Crucial: clicks go through to input */
     display: flex;
     align-items: center;
     gap: 10px;
+    justify-content: center;
   }
-  /* The actual input, invisible but clickable over the whole container */
+  
+  /* The actual input - aggressively positioned to catch clicks */
   #note-date {
     position: absolute;
     top: 0; left: 0;
     width: 100%; height: 100%;
-    opacity: 0;
+    opacity: 0; /* Invisible but clickable */
     cursor: pointer;
-    z-index: 10;
+    z-index: 100; /* Topmost */
+    font-size: 0; /* Hide text cursor */
   }
 
 
@@ -144,7 +161,7 @@ subtitle: Execute sequence. Maintain order.
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    margin-bottom: 20px; /* Increased spacing */
   }
   .card-title {
     font-weight: 700;
@@ -152,13 +169,14 @@ subtitle: Execute sequence. Maintain order.
     text-transform: uppercase;
     font-size: 1.1rem;
     letter-spacing: 0.05em;
+    margin-right: 15px; /* Add explicit spacing */
   }
 
   .status-btn {
     background: #2d2d2d;
     color: #aeaeae;
     border: 1px solid #444;
-    padding: 6px 12px;
+    padding: 8px 16px; /* Larger click area */
     border-radius: 4px;
     font-size: 0.8rem;
     font-weight: 700;
@@ -166,9 +184,10 @@ subtitle: Execute sequence. Maintain order.
     cursor: pointer;
     user-select: none;
     transition: all 0.2s;
-    /* Ensure it's clickable */
     position: relative;
     z-index: 5;
+    white-space: nowrap;
+    margin-left: auto; /* Push to right */
   }
   .status-btn:hover { border-color: #666; color: #fff; }
   .status-btn[data-status="success"] { background: #1c4526; border-color: #2f855a; color: #48bb78; }
@@ -186,8 +205,31 @@ subtitle: Execute sequence. Maintain order.
     font-size: 0.95rem;
     line-height: 1.6;
     resize: none;
+    margin-bottom: 10px;
   }
   textarea.log-input:focus { outline: none; border-color: #008AFF; }
+
+  /* explicit save button */
+  .save-bar {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 15px;
+  }
+  .save-btn {
+    background: #48bb78; /* Green */
+    color: white;
+    border: none;
+    padding: 10px 30px;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  }
+  .save-btn:hover { background: #38a169; }
+  .save-btn:active { transform: translateY(1px); }
 
   .relock-link {
     display: block;
@@ -252,11 +294,14 @@ subtitle: Execute sequence. Maintain order.
   <main class="main-column">
     
     <div class="header-controls">
+      <span class="save-indicator" id="auto-save-msg">Autosaved</span>
       <div class="date-container">
+        <!-- Text for display -->
         <div class="date-text">
           <span>📅</span>
           <span id="date-display-text">Select Date</span>
         </div>
+        <!-- Invisible top-layer input for click handling -->
         <input type="date" id="note-date">
       </div>
     </div>
@@ -290,6 +335,11 @@ subtitle: Execute sequence. Maintain order.
       </div>
     </div>
 
+    <!-- Manual Save Button -->
+    <div class="save-bar">
+      <button class="save-btn" onclick="saveLogDataForced()">SAVE LOGS</button>
+    </div>
+
     <a onclick="relockProtocol()" class="relock-link">🔒 Relock Session</a>
 
   </main>
@@ -311,16 +361,14 @@ subtitle: Execute sequence. Maintain order.
   }
   function unlockPage() {
     authOverlay.style.display = 'none';
-    wrapper.style.display = 'flex'; // FLEX
+    wrapper.style.display = 'flex';
     localStorage.setItem('routineAuth', 'true');
-    // Slight delay to ensure layout is ready before init
     setTimeout(initPage, 50);
   }
   function relockProtocol() {
     localStorage.removeItem('routineAuth');
     location.reload();
   }
-  // Check auth on load
   if (localStorage.getItem('routineAuth') === 'true') {
     unlockPage();
   }
@@ -342,9 +390,7 @@ subtitle: Execute sequence. Maintain order.
   };
 
   function initDateLogic() {
-    // Set to today
     const now = new Date();
-    // Format YYYY-MM-DD local
     const yyyy = now.getFullYear();
     const mm = String(now.getMonth() + 1).padStart(2,'0');
     const dd = String(now.getDate()).padStart(2,'0');
@@ -354,7 +400,6 @@ subtitle: Execute sequence. Maintain order.
     updateDateUI(todayStr);
     loadLogData(todayStr);
 
-    // Event listener
     dateInput.addEventListener('change', (e) => {
       const val = e.target.value;
       if(val) {
@@ -362,15 +407,17 @@ subtitle: Execute sequence. Maintain order.
         loadLogData(val);
       }
     });
+
+    // Ensure clicks on the wrapper trigger input if needed (though overlay should catch it)
+    document.querySelector('.date-container').addEventListener('click', () => {
+        try { dateInput.showPicker(); } catch(e) {}
+    });
   }
 
   function updateDateUI(dateStr) {
     if(!dateStr) return;
-    // Parse
-    const parts = dateStr.split('-'); // [yyyy, mm, dd]
+    const parts = dateStr.split('-');
     const dateObj = new Date(parts[0], parts[1]-1, parts[2]);
-    
-    // Display
     const options = { day: 'numeric', month: 'long', year: 'numeric' };
     dateText.textContent = dateObj.toLocaleDateString('en-GB', options);
   }
@@ -384,9 +431,7 @@ subtitle: Execute sequence. Maintain order.
     
     ['probability', 'dsa', 'project'].forEach(cat => {
       const entry = data[cat] || { text: '', status: 'neutral' };
-      // Set Text
       els[cat].txt.value = entry.text || '';
-      // Set Status
       renderStatusBtn(cat, entry.status);
     });
   }
@@ -394,7 +439,6 @@ subtitle: Execute sequence. Maintain order.
   function saveLogData() {
     const date = dateInput.value;
     if(!date) return;
-    
     const data = {};
     ['probability', 'dsa', 'project'].forEach(cat => {
       data[cat] = {
@@ -403,9 +447,26 @@ subtitle: Execute sequence. Maintain order.
       };
     });
     localStorage.setItem(getStorageKey(date), JSON.stringify(data));
+    showAutoSave();
+  }
+  
+  function saveLogDataForced() {
+    saveLogData();
+    const ind = document.getElementById('auto-save-msg');
+    ind.textContent = "Saved Successfully!";
+    ind.style.opacity = '1';
+    ind.style.color = '#48bb78';
+    setTimeout(() => { ind.style.opacity = '0'; }, 2000);
   }
 
-  // Auto-save on text input
+  function showAutoSave() {
+    const ind = document.getElementById('auto-save-msg');
+    ind.textContent = "Autosaved";
+    ind.style.color = '#666';
+    ind.style.opacity = '1';
+    setTimeout(() => { ind.style.opacity = '0'; }, 1000);
+  }
+
   Object.values(els).forEach(obj => {
     obj.txt.addEventListener('input', saveLogData);
   });
@@ -414,7 +475,6 @@ subtitle: Execute sequence. Maintain order.
   function toggleStatus(cat) {
     const btn = els[cat].btn;
     const current = btn.getAttribute('data-status') || 'neutral';
-    
     let next = 'neutral';
     if(current === 'neutral') next = 'success';
     else if(current === 'success') next = 'fail';
@@ -427,30 +487,27 @@ subtitle: Execute sequence. Maintain order.
   function renderStatusBtn(cat, status) {
     const btn = els[cat].btn;
     btn.setAttribute('data-status', status);
-    
     if(status === 'neutral') {
       btn.textContent = 'SET STATUS';
       btn.style.color = '#aeaeae';
     } else if(status === 'success') {
       btn.textContent = 'RIGHT';
-      btn.style.color = '#48bb78'; /* Force color sync */
+      btn.style.color = '#48bb78';
     } else if(status === 'fail') {
       btn.textContent = 'WRONG';
       btn.style.color = '#f56565';
     }
   }
 
-  // --- LINKS LOGIC (Global) ---
+  // --- LINKS LOGIC ---
   function loadLinks() {
     const list = document.getElementById('ref-list');
     const raw = localStorage.getItem('protocol_links');
     const links = raw ? JSON.parse(raw) : [];
-    
     list.innerHTML = '';
     links.forEach((link, i) => {
       let niceUrl = link.url.replace(/^https?:\/\//, '');
       if(niceUrl.length > 25) niceUrl = niceUrl.substring(0, 22) + '...';
-      
       const li = document.createElement('li');
       li.className = 'ref-item';
       li.innerHTML = `
@@ -469,14 +526,11 @@ subtitle: Execute sequence. Maintain order.
     const urlIn = document.getElementById('new-link-url');
     const title = titleIn.value.trim();
     let url = urlIn.value.trim();
-    
     if(!title || !url) return;
     if(!url.startsWith('http')) url = 'https://' + url;
-    
     const links = JSON.parse(localStorage.getItem('protocol_links') || '[]');
     links.push({ title, url });
     localStorage.setItem('protocol_links', JSON.stringify(links));
-    
     titleIn.value = '';
     urlIn.value = '';
     loadLinks();
