@@ -5,22 +5,31 @@ subtitle: Execute sequence. Maintain order.
 ---
 
 <style>
-  /* Global page tweaks for width */
-  .container-md {
-    max-width: 1400px !important; /* Widen the container to use full space */
+  /* FULL WIDTH LAYOUT */
+  .container-md, .container {
+    max-width: 100% !important;
+    padding-left: 40px !important; 
+    padding-right: 40px !important;
+    margin: 0 !important;
+  }
+  
+  /* Reset page wrapper if it exists in theme */
+  .page-content {
+    width: 100%;
   }
 
   .protocol-layout {
     display: flex;
-    gap: 30px;
+    gap: 40px;
     font-family: 'Open Sans', sans-serif;
     color: #e0e0e0;
     margin-top: 20px;
+    width: 100%;
   }
   
   /* LEFT SIDEBAR: REFERENCES */
   .sidebar-section {
-    flex: 0 0 300px; /* Fixed width sidebar */
+    flex: 0 0 280px;
     padding-right: 20px;
     border-right: 1px solid #333;
   }
@@ -28,7 +37,7 @@ subtitle: Execute sequence. Maintain order.
   /* RIGHT MAIN: DAILY LOG */
   .main-section {
     flex: 1;
-    min-width: 0; /* Prevent flex overflow */
+    min-width: 0;
   }
 
   /* Section Headers */
@@ -39,6 +48,7 @@ subtitle: Execute sequence. Maintain order.
     padding-bottom: 5px;
     color: #fff;
     font-weight: 600;
+    margin-top: 0;
   }
 
   /* DYNAMIC LINKS */
@@ -120,32 +130,44 @@ subtitle: Execute sequence. Maintain order.
 
   /* LOG CONTROLS & DATE */
   .log-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    display: flex; /* Align items horizontally */
+    align-items: center; /* Center items vertically */
+    justify-content: flex-end; /* Push to the right */
     margin-bottom: 20px;
-    background: #1a1a1a;
-    padding: 15px;
-    border-radius: 8px;
-    border: 1px solid #333;
+    background: transparent;
   }
-  .date-display {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #fff;
-    font-family: 'Montserrat', sans-serif;
-  }
-  .date-picker-wrapper {
+  
+  /* Custom Date Picker */
+  .date-wrapper {
     position: relative;
+    display: inline-block;
   }
-  /* Hide the actual input but keep it clickable */
-  input[type="date"] {
-    background: #2d2d2d;
-    color: #fff;
+  .date-display-btn {
+    background: #1a1a1a;
     border: 1px solid #444;
-    padding: 5px 10px;
-    border-radius: 4px;
-    color-scheme: dark;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    font-family: 'Montserrat', sans-serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .date-display-btn:hover {
+    border-color: #008AFF;
+  }
+  /* Hide real input but cover the button */
+  input[type="date"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2;
   }
   
   /* GRID FOR 3 CATEGORIES */
@@ -154,7 +176,6 @@ subtitle: Execute sequence. Maintain order.
     grid-template-columns: repeat(3, 1fr);
     gap: 20px;
   }
-  /* Responsive grid */
   @media (max-width: 992px) {
     .log-grid { grid-template-columns: 1fr; }
     .sidebar-section { flex: none; width: 100%; border-right: none; border-bottom: 1px solid #333; padding-bottom: 20px; }
@@ -165,7 +186,7 @@ subtitle: Execute sequence. Maintain order.
     background: #1a1a1a;
     border: 1px solid #333;
     border-radius: 8px;
-    padding: 15px;
+    padding: 20px;
     display: flex;
     flex-direction: column;
   }
@@ -173,50 +194,54 @@ subtitle: Execute sequence. Maintain order.
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
   }
   .card-title {
     font-weight: 700;
-    color: #e0e0e0;
+    color: #fff;
     text-transform: uppercase;
-    font-size: 0.9rem;
+    font-size: 1.1rem;
     letter-spacing: 0.05em;
   }
   
   /* STATUS TOGGLE */
   .status-toggle {
     cursor: pointer;
-    font-size: 0.8rem;
-    padding: 4px 8px;
+    font-size: 0.75rem;
+    padding: 6px 12px;
     border-radius: 4px;
-    background: #333;
+    background: #2d2d2d;
     color: #888;
     border: 1px solid #444;
     font-weight: 600;
     transition: all 0.3s;
     user-select: none;
+    text-transform: uppercase;
+  }
+  .status-toggle:hover {
+    border-color: #666;
   }
   .status-toggle.success {
-    background: #1c4526; /* Dark green bg */
+    background: #1c4526;
     border-color: #2f855a;
-    color: #48bb78; /* Bright green text */
+    color: #48bb78;
   }
   .status-toggle.fail {
-    background: #4a1c1c; /* Dark red bg */
+    background: #4a1c1c;
     border-color: #9b2c2c;
-    color: #f56565; /* Bright red text */
+    color: #f56565;
   }
 
   textarea.category-note {
     width: 100%;
-    height: 150px;
+    height: 200px; /* Taller notes */
     background: #121212;
     border: 1px solid #333;
     border-radius: 4px;
-    padding: 10px;
+    padding: 12px;
     color: #ddd;
     font-family: 'Courier New', monospace;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     line-height: 1.5;
     resize: vertical;
   }
@@ -291,10 +316,16 @@ subtitle: Execute sequence. Maintain order.
   <!-- RIGHT MAIN: DAILY LOG -->
   <main class="main-section">
     <div class="log-header">
-      <div class="date-display" id="formatted-date"></div>
-      <div class="date-picker-wrapper">
+      
+      <!-- Custom Date Picker -->
+      <div class="date-wrapper">
+        <div class="date-display-btn">
+          <span style="opacity: 0.7;">📅</span>
+          <span id="formatted-date">Select Date</span>
+        </div>
         <input type="date" id="note-date">
       </div>
+
     </div>
 
     <div class="log-grid">
@@ -303,7 +334,7 @@ subtitle: Execute sequence. Maintain order.
       <div class="log-card">
         <div class="card-header">
           <span class="card-title">Probability</span>
-          <button class="status-toggle" id="toggle-prob" onclick="toggleStatus('probability')">PENDING</button>
+          <button class="status-toggle" id="toggle-prob" onclick="toggleStatus('probability')" title="Click to change status">SET STATUS</button>
         </div>
         <textarea id="note-probability" class="category-note" placeholder="Log probability progress..."></textarea>
       </div>
@@ -312,7 +343,7 @@ subtitle: Execute sequence. Maintain order.
       <div class="log-card">
         <div class="card-header">
           <span class="card-title">DSA</span>
-          <button class="status-toggle" id="toggle-dsa" onclick="toggleStatus('dsa')">PENDING</button>
+          <button class="status-toggle" id="toggle-dsa" onclick="toggleStatus('dsa')" title="Click to change status">SET STATUS</button>
         </div>
         <textarea id="note-dsa" class="category-note" placeholder="Log DSA progress..."></textarea>
       </div>
@@ -321,7 +352,7 @@ subtitle: Execute sequence. Maintain order.
       <div class="log-card">
         <div class="card-header">
           <span class="card-title">Project</span>
-          <button class="status-toggle" id="toggle-project" onclick="toggleStatus('project')">PENDING</button>
+          <button class="status-toggle" id="toggle-project" onclick="toggleStatus('project')" title="Click to change status">SET STATUS</button>
         </div>
         <textarea id="note-project" class="category-note" placeholder="Log project updates..."></textarea>
       </div>
@@ -400,10 +431,13 @@ subtitle: Execute sequence. Maintain order.
   }
 
   dateInput.addEventListener('change', (e) => {
-    const parts = e.target.value.split('-');
-    const newDate = new Date(parts[0], parts[1]-1, parts[2]);
-    updateDateDisplay(newDate);
-    loadDataForDate(e.target.value);
+    // Handle manual date picker change
+    if(e.target.value) {
+        const parts = e.target.value.split('-');
+        const newDate = new Date(parts[0], parts[1]-1, parts[2]);
+        updateDateDisplay(newDate);
+        loadDataForDate(e.target.value);
+    }
   });
 
   // --- DATA SAVING/LOADING ---
@@ -459,7 +493,7 @@ subtitle: Execute sequence. Maintain order.
     btn.classList.remove('success', 'fail');
     
     if (status === 'neutral') {
-      btn.textContent = 'PENDING';
+      btn.textContent = 'SET STATUS';
       btn.style.color = '#888';
     } else if (status === 'success') {
       btn.textContent = 'RIGHT';
