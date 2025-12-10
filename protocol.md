@@ -9,6 +9,7 @@ subtitle: Execute sequence. Maintain order.
     max-width: 700px;
     margin: 0 auto;
     font-family: 'Open Sans', sans-serif;
+    color: #e0e0e0; /* Light text for dark mode */
   }
   
   /* Section Headers */
@@ -16,39 +17,84 @@ subtitle: Execute sequence. Maintain order.
     font-size: 1.5rem;
     margin-top: 40px;
     margin-bottom: 20px;
-    border-bottom: 2px solid #eaeaea;
+    border-bottom: 1px solid #444;
     padding-bottom: 10px;
-    color: #333;
+    color: #fff;
   }
 
-  /* References Section */
+  /* Dynamic Links Section */
+  .add-link-form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    background: #1a1a1a;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #333;
+  }
+  .link-input {
+    background: #2d2d2d;
+    border: 1px solid #444;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 4px;
+    flex-grow: 1;
+  }
+  .add-btn {
+    background: #008AFF;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .add-btn:hover {
+    background: #0077db;
+  }
+
   .ref-list {
     list-style: none;
     padding: 0;
   }
   .ref-item {
-    background: #fdfdfd;
-    border: 1px solid #eee;
+    background: #1a1a1a;
+    border: 1px solid #333;
     padding: 15px;
     margin-bottom: 10px;
     border-radius: 8px;
-    transition: all 0.2s ease;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    transition: all 0.2s ease;
   }
   .ref-item:hover {
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    background: #fff;
-    transform: translateY(-1px);
+    border-color: #555;
+    background: #252525;
   }
-  .ref-link {
-    text-decoration: none;
-    color: #008AFF;
+  .ref-link-wrapper {
+    display: flex;
+    flex-direction: column;
+  }
+  .ref-title {
     font-weight: 600;
+    color: #fff;
   }
-  .ref-link:hover {
-    text-decoration: underline;
+  .ref-url {
+    font-size: 0.8rem;
+    color: #888;
+  }
+  .delete-btn {
+    background: transparent;
+    border: 1px solid #555;
+    color: #888;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+  }
+  .delete-btn:hover {
+    border-color: #ff4444;
+    color: #ff4444;
   }
 
   /* Daily Notes Section */
@@ -59,12 +105,14 @@ subtitle: Execute sequence. Maintain order.
     margin-bottom: 15px;
   }
   input[type="date"] {
+    background: #2d2d2d;
     padding: 8px 12px;
-    border: 1px solid #ddd;
+    border: 1px solid #444;
     border-radius: 5px;
     font-family: inherit;
     font-size: 1rem;
-    color: #333;
+    color: #fff;
+    color-scheme: dark; /* Standard property for date picker in dark mode */
   }
   .save-indicator {
     font-size: 0.85rem;
@@ -75,86 +123,74 @@ subtitle: Execute sequence. Maintain order.
   }
   .save-indicator.visible {
     opacity: 1;
+    color: #48bb78;
   }
   
   textarea.daily-note {
     width: 100%;
     height: 300px;
     padding: 15px;
-    border: 1px solid #ccc;
+    border: 1px solid #333;
     border-radius: 8px;
-    font-family: 'Courier New', Courier, monospace; /* Monospace for notes vibe */
+    font-family: 'Courier New', Courier, monospace;
     font-size: 1rem;
     line-height: 1.6;
     resize: vertical;
-    background: #fff;
-    color: #000;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+    background: #1a1a1a;
+    color: #e0e0e0;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
   }
   textarea.daily-note:focus {
     outline: none;
     border-color: #008AFF;
-    box-shadow: 0 0 0 3px rgba(0,138,255,0.1);
   }
 
-  /* Auth UI (Kept from before) */
+  /* Auth UI (Dark Mode) */
   #auth-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: white;
+    background: #121212;
     z-index: 1000;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    color: #fff;
   }
   .auth-box {
     text-align: center;
     padding: 2rem;
-    background: #f9f9f9;
+    background: #1e1e1e;
     border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    border: 1px solid #333;
   }
   .auth-input {
     padding: 10px;
-    border: 1px solid #ddd;
+    background: #2d2d2d;
+    border: 1px solid #444;
     border-radius: 5px;
     margin-bottom: 10px;
     width: 200px;
-  }
-  .auth-btn {
-    padding: 10px 20px;
-    background: #4299e1;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  .auth-btn:hover {
-    background: #3182ce;
-  }
-  .error-msg {
-    color: red;
-    margin-top: 10px;
-    display: none;
+    color: #fff;
   }
   .relock-btn {
     display: block;
     margin: 40px auto 10px;
     background: transparent;
     border: 1px solid #555;
-    color: #aeaeae;
+    color: #666;
     padding: 5px 15px;
     border-radius: 4px;
     cursor: pointer;
     font-size: 0.8rem;
   }
   .relock-btn:hover {
-    background: #333;
-    color: #fff;
+    border-color: #888;
+    color: #888;
   }
 </style>
 
@@ -175,24 +211,15 @@ subtitle: Execute sequence. Maintain order.
 
   <!-- REFERENCES SECTION -->
   <h2 class="section-title">📚 Study Material & References</h2>
-  <ul class="ref-list">
-    <!-- Edit these links in the HTML directly -->
-    <li class="ref-item">
-      <span>Documentation / Wiki</span>
-      <a href="https://devdocs.io" target="_blank" class="ref-link">Open</a>
-    </li>
-    <li class="ref-item">
-      <span>Course Dashboard</span>
-      <a href="#" target="_blank" class="ref-link">Link</a>
-    </li>
-    <li class="ref-item">
-      <span>GitHub Repos</span>
-      <a href="https://github.com" target="_blank" class="ref-link">Visit</a>
-    </li>
-     <li class="ref-item">
-      <span>Design Inspiration</span>
-      <a href="https://dribbble.com" target="_blank" class="ref-link">Browse</a>
-    </li>
+  
+  <div class="add-link-form">
+    <input type="text" id="new-link-title" class="link-input" placeholder="Title (e.g. Docs)">
+    <input type="text" id="new-link-url" class="link-input" placeholder="URL (e.g. https://...)">
+    <button onclick="addNewLink()" class="add-btn">Add</button>
+  </div>
+
+  <ul class="ref-list" id="ref-list">
+    <!-- Links will be injected here JS -->
   </ul>
 
   <!-- DAILY NOTES SECTION -->
@@ -230,7 +257,7 @@ subtitle: Execute sequence. Maintain order.
     authOverlay.style.display = 'none';
     mainContainer.style.display = 'block';
     localStorage.setItem('routineAuth', 'true');
-    initNotes(); // Initialize notes after unlock
+    initPage(); // Initialize everything after unlock
   }
 
   function relockProtocol() {
@@ -242,6 +269,71 @@ subtitle: Execute sequence. Maintain order.
     unlockPage();
   }
 
+  // --- INITIALIZATION ---
+  function initPage() {
+    initNotes();
+    loadLinks();
+  }
+
+  // --- DYNAMIC LINKS LOGIC ---
+  const refListEl = document.getElementById('ref-list');
+  const titleInput = document.getElementById('new-link-title');
+  const urlInput = document.getElementById('new-link-url');
+
+  function getLinks() {
+    return JSON.parse(localStorage.getItem('protocol_links')) || [];
+  }
+
+  function saveLinks(links) {
+    localStorage.setItem('protocol_links', JSON.stringify(links));
+  }
+
+  function loadLinks() {
+    const links = getLinks();
+    refListEl.innerHTML = '';
+    
+    links.forEach((link, index) => {
+      const li = document.createElement('li');
+      li.className = 'ref-item';
+      li.innerHTML = `
+        <div class="ref-link-wrapper">
+          <span class="ref-title">${link.title}</span>
+          <a href="${link.url}" target="_blank" class="ref-url">${link.url}</a>
+        </div>
+        <button onclick="deleteLink(${index})" class="delete-btn">Remove</button>
+      `;
+      refListEl.appendChild(li);
+    });
+  }
+
+  function addNewLink() {
+    const title = titleInput.value.trim();
+    const url = urlInput.value.trim();
+    
+    if (!title || !url) return;
+    
+    // Simple URL validation prefix
+    let finalUrl = url;
+    if (!url.startsWith('http')) {
+      finalUrl = 'https://' + url;
+    }
+
+    const links = getLinks();
+    links.push({ title, url: finalUrl });
+    saveLinks(links);
+    
+    titleInput.value = '';
+    urlInput.value = '';
+    loadLinks();
+  }
+
+  function deleteLink(index) {
+    const links = getLinks();
+    links.splice(index, 1);
+    saveLinks(links);
+    loadLinks();
+  }
+
   // --- DAILY NOTES LOGIC ---
   const dateInput = document.getElementById('note-date');
   const noteArea = document.getElementById('daily-note');
@@ -249,9 +341,7 @@ subtitle: Execute sequence. Maintain order.
   let saveTimeout;
 
   function initNotes() {
-    // Set date to today (local time)
     const today = new Date();
-    // Format YYYY-MM-DD manually to avoid UTC issues
     const yyyy = today.getFullYear();
     const mm = String(today.getMonth() + 1).padStart(2, '0');
     const dd = String(today.getDate()).padStart(2, '0');
@@ -277,7 +367,6 @@ subtitle: Execute sequence. Maintain order.
 
     localStorage.setItem(getNoteKey(date), content);
     
-    // Show saved indicator
     saveIndicator.classList.add('visible');
     clearTimeout(saveTimeout);
     saveTimeout = setTimeout(() => {
