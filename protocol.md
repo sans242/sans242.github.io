@@ -5,79 +5,141 @@ subtitle: Execute sequence. Maintain order.
 ---
 
 <style>
-  .routine-container {
-    max-width: 600px;
+  .protocol-container {
+    max-width: 700px;
     margin: 0 auto;
     font-family: 'Open Sans', sans-serif;
   }
-  .task-item {
-    display: flex;
-    align-items: center;
+  
+  /* Section Headers */
+  h2.section-title {
+    font-size: 1.5rem;
+    margin-top: 40px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #eaeaea;
+    padding-bottom: 10px;
+    color: #333;
+  }
+
+  /* References Section */
+  .ref-list {
+    list-style: none;
+    padding: 0;
+  }
+  .ref-item {
     background: #fdfdfd;
     border: 1px solid #eee;
     padding: 15px;
     margin-bottom: 10px;
     border-radius: 8px;
     transition: all 0.2s ease;
-    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
-  .task-item:hover {
+  .ref-item:hover {
     box-shadow: 0 4px 6px rgba(0,0,0,0.05);
     background: #fff;
+    transform: translateY(-1px);
   }
-  .task-item.completed {
-    background: #f0fff4;
-    border-color: #c6f6d5;
-  }
-  .task-item.completed .task-text {
-    text-decoration: line-through;
-    color: #888 !important;
-  }
-  .checkbox-wrapper {
-    margin-right: 15px;
-    display: flex;
-    align-items: center;
-  }
-  .custom-checkbox {
-    width: 24px;
-    height: 24px;
-    border: 2px solid #ddd;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    transition: all 0.2s;
-  }
-  .task-item.completed .custom-checkbox {
-    background: #48bb78;
-    border-color: #48bb78;
-  }
-  .task-text {
-    font-size: 1.1rem;
-    flex-grow: 1;
-    color: #000000 !important; /* Force black text */
+  .ref-link {
+    text-decoration: none;
+    color: #008AFF;
     font-weight: 600;
   }
-  .progress-bar-container {
-    background: #eee;
-    border-radius: 10px;
-    height: 10px;
+  .ref-link:hover {
+    text-decoration: underline;
+  }
+
+  /* Daily Notes Section */
+  .notes-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  input[type="date"] {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-family: inherit;
+    font-size: 1rem;
+    color: #333;
+  }
+  .save-indicator {
+    font-size: 0.85rem;
+    color: #888;
+    font-style: italic;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .save-indicator.visible {
+    opacity: 1;
+  }
+  
+  textarea.daily-note {
     width: 100%;
-    margin-bottom: 30px;
-    overflow: hidden;
+    height: 300px;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-family: 'Courier New', Courier, monospace; /* Monospace for notes vibe */
+    font-size: 1rem;
+    line-height: 1.6;
+    resize: vertical;
+    background: #fff;
+    color: #000;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
   }
-  .progress-bar {
-    background: linear-gradient(90deg, #63b3ed, #4299e1);
+  textarea.daily-note:focus {
+    outline: none;
+    border-color: #008AFF;
+    box-shadow: 0 0 0 3px rgba(0,138,255,0.1);
+  }
+
+  /* Auth UI (Kept from before) */
+  #auth-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
     height: 100%;
-    width: 0%;
-    transition: width 0.3s ease;
+    background: white;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
   }
-  .stats {
+  .auth-box {
     text-align: center;
-    margin-bottom: 20px;
-    font-size: 0.9rem;
-    color: #aeaeae;
+    padding: 2rem;
+    background: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  .auth-input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    width: 200px;
+  }
+  .auth-btn {
+    padding: 10px 20px;
+    background: #4299e1;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  .auth-btn:hover {
+    background: #3182ce;
+  }
+  .error-msg {
+    color: red;
+    margin-top: 10px;
+    display: none;
   }
   .relock-btn {
     display: block;
@@ -109,19 +171,39 @@ subtitle: Execute sequence. Maintain order.
 </div>
 
 <!-- Main Container - HIDDEN BY DEFAULT -->
-<div class="routine-container" style="display: none;">
-  
-  <div class="stats">
-    <span id="completed-count">0</span> / <span id="total-count">0</span> completed
-  </div>
-  
-  <div class="progress-bar-container">
-    <div class="progress-bar" id="progress-bar"></div>
-  </div>
+<div class="protocol-container" style="display: none;">
 
-  <div id="task-list">
-    <!-- Tasks will be injected here -->
+  <!-- REFERENCES SECTION -->
+  <h2 class="section-title">📚 Study Material & References</h2>
+  <ul class="ref-list">
+    <!-- Edit these links in the HTML directly -->
+    <li class="ref-item">
+      <span>Documentation / Wiki</span>
+      <a href="https://devdocs.io" target="_blank" class="ref-link">Open</a>
+    </li>
+    <li class="ref-item">
+      <span>Course Dashboard</span>
+      <a href="#" target="_blank" class="ref-link">Link</a>
+    </li>
+    <li class="ref-item">
+      <span>GitHub Repos</span>
+      <a href="https://github.com" target="_blank" class="ref-link">Visit</a>
+    </li>
+     <li class="ref-item">
+      <span>Design Inspiration</span>
+      <a href="https://dribbble.com" target="_blank" class="ref-link">Browse</a>
+    </li>
+  </ul>
+
+  <!-- DAILY NOTES SECTION -->
+  <h2 class="section-title">📝 Daily Log</h2>
+  
+  <div class="notes-controls">
+    <input type="date" id="note-date">
+    <span id="save-indicator" class="save-indicator">Saved locally</span>
   </div>
+  
+  <textarea id="daily-note" class="daily-note" placeholder="Log your activities, thoughts, and progress for today..."></textarea>
 
   <button onclick="relockProtocol()" class="relock-btn">🔒 Relock Protocol</button>
 
@@ -129,11 +211,11 @@ subtitle: Execute sequence. Maintain order.
 
 <script>
   // --- PASSWORD PROTECTION ---
-  const CORRECT_PASSWORD = "password123"; // CHANGE THIS IF YOU WANT
+  const CORRECT_PASSWORD = "password123"; 
   const authOverlay = document.getElementById('auth-overlay');
   const passwordInput = document.getElementById('password-input');
   const errorMsg = document.getElementById('error-msg');
-  const mainContainer = document.querySelector('.routine-container');
+  const mainContainer = document.querySelector('.protocol-container');
 
   function checkPassword() {
     const input = passwordInput.value;
@@ -148,6 +230,7 @@ subtitle: Execute sequence. Maintain order.
     authOverlay.style.display = 'none';
     mainContainer.style.display = 'block';
     localStorage.setItem('routineAuth', 'true');
+    initNotes(); // Initialize notes after unlock
   }
 
   function relockProtocol() {
@@ -155,82 +238,59 @@ subtitle: Execute sequence. Maintain order.
     location.reload();
   }
 
-  // Check if they already logged in on this browser
   if (localStorage.getItem('routineAuth') === 'true') {
     unlockPage();
   }
 
-  // --- ROUTINE LOGIC ---
-  
-  // Default routine tasks
-  const defaultTasks = [
-    { id: 'task_1', text: 'Wake up at 7:00 AM' },
-    { id: 'task_2', text: 'Drink 500ml Water' },
-    { id: 'task_3', text: 'Morning Workout (30 mins)' },
-    { id: 'task_4', text: 'Read 10 pages' },
-    { id: 'task_5', text: 'Code for 2 hours' },
-    { id: 'task_6', text: 'Review Goals' }
-  ];
+  // --- DAILY NOTES LOGIC ---
+  const dateInput = document.getElementById('note-date');
+  const noteArea = document.getElementById('daily-note');
+  const saveIndicator = document.getElementById('save-indicator');
+  let saveTimeout;
 
-  // Load from LocalStorage or use default
-  let userStatus = JSON.parse(localStorage.getItem('routineStatus')) || {};
-
-  const taskListEl = document.getElementById('task-list');
-  const progressBarEl = document.getElementById('progress-bar');
-  const completedCountEl = document.getElementById('completed-count');
-  const totalCountEl = document.getElementById('total-count');
-
-  function saveStatus() {
-    localStorage.setItem('routineStatus', JSON.stringify(userStatus));
-    updateStats();
+  function initNotes() {
+    // Set date to today (local time)
+    const today = new Date();
+    // Format YYYY-MM-DD manually to avoid UTC issues
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    dateInput.value = `${yyyy}-${mm}-${dd}`;
+    
+    loadNoteForDate(dateInput.value);
   }
 
-  function updateStats() {
-    const total = defaultTasks.length;
-    let completed = 0;
-    
-    defaultTasks.forEach(task => {
-      if (userStatus[task.id]) completed++;
-    });
-
-    completedCountEl.textContent = completed;
-    totalCountEl.textContent = total;
-    
-    const percentage = (completed / total) * 100;
-    progressBarEl.style.width = percentage + '%';
+  function getNoteKey(date) {
+    return `protocol_note_${date}`;
   }
 
-  function renderTasks() {
-    taskListEl.innerHTML = '';
-    
-    defaultTasks.forEach(task => {
-      const isCompleted = userStatus[task.id] === true;
-      
-      const item = document.createElement('div');
-      item.className = `task-item ${isCompleted ? 'completed' : ''}`;
-      item.onclick = () => toggleTask(task.id);
-      
-      item.innerHTML = `
-        <div class="checkbox-wrapper">
-          <div class="custom-checkbox">
-            ${isCompleted ? '✓' : ''}
-          </div>
-        </div>
-        <div class="task-text">${task.text}</div>
-      `;
-      
-      taskListEl.appendChild(item);
-    });
-    
-    updateStats();
+  function loadNoteForDate(date) {
+    const savedContent = localStorage.getItem(getNoteKey(date));
+    noteArea.value = savedContent || '';
   }
 
-  function toggleTask(taskId) {
-    userStatus[taskId] = !userStatus[taskId];
-    saveStatus();
-    renderTasks();
+  function saveCurrentNote() {
+    const date = dateInput.value;
+    const content = noteArea.value;
+    
+    if (!date) return;
+
+    localStorage.setItem(getNoteKey(date), content);
+    
+    // Show saved indicator
+    saveIndicator.classList.add('visible');
+    clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(() => {
+      saveIndicator.classList.remove('visible');
+    }, 2000);
   }
 
-  // Initial render
-  renderTasks();
+  // Event Listeners
+  dateInput.addEventListener('change', (e) => {
+    loadNoteForDate(e.target.value);
+  });
+
+  noteArea.addEventListener('input', () => {
+    saveCurrentNote();
+  });
 </script>
