@@ -19,7 +19,7 @@ navbar-links:
   About Me: "aboutme"
   Posts: "blog"
   Projects: "projects"
-  Protocol: "protocol"
+  Movies: "movies"
   Resume: "/assets/docs/cv.pdf"
   #  Resources:
   #  - Beautiful Jekyll: "https://beautifuljekyll.com"
