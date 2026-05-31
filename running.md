@@ -68,6 +68,9 @@ subtitle: Garmin Running Dashboard
 
   /* CHART */
   .chart-container { max-width: 1200px; margin: 0 auto; background: linear-gradient(135deg, #111118, #14141e); border: 1px solid #1e1e2e; border-radius: 16px; padding: 24px; }
+  .rhr-info { display: flex; gap: 24px; margin-bottom: 16px; flex-wrap: wrap; }
+  .rhr-info-item { font-size: 0.8rem; color: #888; font-family: 'JetBrains Mono', monospace; }
+  .rhr-info-item span { color: #ef5350; font-weight: 700; }
   .chart-tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
   .chart-tab { padding: 6px 16px; background: #0a0a0f; border: 1px solid #1e1e2e; border-radius: 10px; color: #888; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.3s; font-family: 'Inter', sans-serif; }
   .chart-tab:hover { border-color: #444; color: #ccc; }
@@ -178,6 +181,12 @@ subtitle: Garmin Running Dashboard
       <canvas id="speed-chart"></canvas>
     </div>
 
+    <div class="section-header"><h2>❤️ Resting Heart Rate</h2><div class="section-line"></div></div>
+    <div class="chart-container">
+      <div class="rhr-info" id="rhr-info"></div>
+      <canvas id="rhr-chart" style="width:100%;height:280px;display:block;"></canvas>
+    </div>
+
     <div class="section-header"><h2>📅 Monthly Breakdown</h2><div class="section-line"></div></div>
     <div class="monthly-container">
       <div class="month-tabs" id="month-tabs"></div>
@@ -232,6 +241,7 @@ let sortField = 'date';
 let sortAsc = false;
 let currentChartMetric = 'maxSpeed';
 let currentMonth = null;
+let rhrData = [];
 
 // ── Helpers ──
 function msToKmh(ms) { return ms ? (ms * 3.6).toFixed(1) : '—'; }
@@ -279,6 +289,7 @@ async function loadData() {
     renderStats();
     renderRecords();
     renderChart();
+    await loadRhrData();
     renderMonthlyStats();
     renderTable();
   } catch (err) {
@@ -556,10 +567,94 @@ async function refreshData() {
   finally { btn.classList.remove('loading'); btn.disabled = false; }
 }
 
+// ── Resting HR ──
+async function loadRhrData() {
+  try {
+    const { data, error } = await sb.from('garmin_resting_hr').select('*').order('date', { ascending: true });
+    if (error) throw error;
+    rhrData = data || [];
+    if (rhrData.length > 0) renderRhrChart();
+  } catch (e) { console.warn('RHR load skipped:', e); }
+}
+
+function renderRhrChart() {
+  if (!rhrData.length) return;
+  const canvas = document.getElementById('rhr-chart');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width * dpr; canvas.height = 280 * dpr;
+  canvas.style.width = rect.width + 'px'; canvas.style.height = '280px';
+  ctx.scale(dpr, dpr);
+  const W = rect.width, H = 280;
+  const pad = {top:30,right:20,bottom:40,left:50};
+  const cW = W-pad.left-pad.right, cH = H-pad.top-pad.bottom;
+  ctx.clearRect(0,0,W,H);
+
+  const values = rhrData.map(d => d.resting_hr);
+  const dates = rhrData.map(d => formatDateShort(d.date));
+  const minY = 40, maxY = 70;
+  const rng = maxY - minY;
+
+  // Info bar
+  const avg = Math.round(values.reduce((s,v)=>s+v,0)/values.length);
+  const min = Math.min(...values), max = Math.max(...values);
+  const latest = values[values.length-1];
+  document.getElementById('rhr-info').innerHTML = `
+    <div class="rhr-info-item">Latest: <span>${latest} bpm</span></div>
+    <div class="rhr-info-item">Avg: <span>${avg} bpm</span></div>
+    <div class="rhr-info-item">Min: <span>${min} bpm</span></div>
+    <div class="rhr-info-item">Max: <span>${max} bpm</span></div>
+    <div class="rhr-info-item">${rhrData.length} days</div>
+  `;
+
+  // Grid
+  ctx.strokeStyle='#1e1e2e'; ctx.lineWidth=1;
+  for (let i=0;i<=5;i++) {
+    const y=pad.top+(cH/5)*i;
+    ctx.beginPath(); ctx.moveTo(pad.left,y); ctx.lineTo(W-pad.right,y); ctx.stroke();
+    const val=maxY-(rng/5)*i;
+    ctx.fillStyle='#555'; ctx.font='11px JetBrains Mono'; ctx.textAlign='right';
+    ctx.fillText(val.toFixed(0),pad.left-8,y+4);
+  }
+
+  // Points
+  const pts=[];
+  for (let i=0;i<values.length;i++) {
+    const x=pad.left+(i/Math.max(values.length-1,1))*cW;
+    const clamped = Math.max(minY, Math.min(maxY, values[i]));
+    const y=pad.top+cH-((clamped-minY)/rng)*cH;
+    pts.push({x,y,val:values[i],label:dates[i]});
+  }
+  if (pts.length<2) return;
+
+  // Fill
+  const grad=ctx.createLinearGradient(0,pad.top,0,H-pad.bottom);
+  grad.addColorStop(0,'rgba(239,83,80,0.25)'); grad.addColorStop(1,'rgba(239,83,80,0.02)');
+  ctx.beginPath(); ctx.moveTo(pts[0].x,H-pad.bottom); ctx.lineTo(pts[0].x,pts[0].y);
+  for (let i=1;i<pts.length;i++){const cx=(pts[i-1].x+pts[i].x)/2;ctx.bezierCurveTo(cx,pts[i-1].y,cx,pts[i].y,pts[i].x,pts[i].y);}
+  ctx.lineTo(pts[pts.length-1].x,H-pad.bottom); ctx.closePath(); ctx.fillStyle=grad; ctx.fill();
+
+  // Line
+  ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
+  for (let i=1;i<pts.length;i++){const cx=(pts[i-1].x+pts[i].x)/2;ctx.bezierCurveTo(cx,pts[i-1].y,cx,pts[i].y,pts[i].x,pts[i].y);}
+  ctx.strokeStyle='#ef5350'; ctx.lineWidth=2.5; ctx.stroke();
+
+  // Dots
+  pts.forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,3,0,Math.PI*2);ctx.fillStyle='#ef5350';ctx.fill();ctx.beginPath();ctx.arc(p.x,p.y,1.5,0,Math.PI*2);ctx.fillStyle='#0a0a0f';ctx.fill();});
+
+  // X labels
+  const step=Math.max(1,Math.floor(pts.length/10));
+  ctx.fillStyle='#555'; ctx.font='10px JetBrains Mono'; ctx.textAlign='center';
+  for (let i=0;i<pts.length;i+=step) ctx.fillText(pts[i].label,pts[i].x,H-pad.bottom+18);
+  ctx.fillStyle='#666'; ctx.font='11px Inter'; ctx.textAlign='left';
+  ctx.fillText('Resting HR (bpm)',pad.left,pad.top-10);
+}
+
 // ── Init ──
 document.addEventListener('DOMContentLoaded', () => {
   loadData();
   document.getElementById('table-search').addEventListener('input', renderTable);
-  window.addEventListener('resize', () => { if (allRuns.length > 0) renderChart(); });
+  window.addEventListener('resize', () => { if (allRuns.length > 0) { renderChart(); renderRhrChart(); } });
 });
 </script>

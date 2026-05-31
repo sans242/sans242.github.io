@@ -7,7 +7,7 @@ import os
 import json
 import sys
 import io
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # Fix encoding for Windows
 if sys.platform == 'win32':
@@ -129,6 +129,47 @@ def upsert_to_supabase(supabase_client, activities):
     print(f"[DONE] Sync complete! {total_upserted} activities in database.")
 
 
+def fetch_resting_hr(garmin_client, days=90):
+    """Fetch resting heart rate for the last N days."""
+    print(f"[RHR] Fetching resting HR for last {days} days...")
+    rhr_data = []
+    today = datetime.now().date()
+
+    for i in range(days):
+        day = today - timedelta(days=i)
+        day_str = day.isoformat()
+        try:
+            hr = garmin_client.get_heart_rates(day_str)
+            resting = hr.get("restingHeartRate")
+            if resting and resting > 0:
+                rhr_data.append({
+                    "date": day_str,
+                    "resting_hr": resting,
+                    "synced_at": datetime.utcnow().isoformat(),
+                })
+        except Exception:
+            pass  # skip days with no data
+
+    print(f"[RHR] Got {len(rhr_data)} days of resting HR data")
+    return rhr_data
+
+
+def upsert_resting_hr(supabase_client, rhr_data):
+    """Upsert resting HR data to Supabase."""
+    if not rhr_data:
+        print("[RHR] No resting HR data to sync")
+        return
+
+    for i in range(0, len(rhr_data), 50):
+        chunk = rhr_data[i:i+50]
+        supabase_client.table("garmin_resting_hr").upsert(
+            chunk, on_conflict="date"
+        ).execute()
+        print(f"[RHR] Upserted {min(i+50, len(rhr_data))}/{len(rhr_data)}")
+
+    print(f"[RHR] Resting HR sync complete!")
+
+
 def main():
     # Validate env vars
     missing = []
@@ -143,10 +184,14 @@ def main():
     garmin_client = login_garmin()
     supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-    # Fetch & sync
+    # Fetch & sync activities
     all_activities = fetch_all_activities(garmin_client)
     running_activities = filter_running_activities(all_activities)
     upsert_to_supabase(supabase_client, running_activities)
+
+    # Fetch & sync resting HR
+    rhr_data = fetch_resting_hr(garmin_client)
+    upsert_resting_hr(supabase_client, rhr_data)
 
 
 if __name__ == "__main__":
