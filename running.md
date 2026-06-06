@@ -231,7 +231,11 @@ subtitle: Garmin Running Dashboard
 <script>
 const SUPABASE_URL = 'https://uuzrzcnvieygjlihgwnb.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV1enJ6Y252aWV5Z2psaWhnd25iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4MDE3OTEsImV4cCI6MjA5MzM3Nzc5MX0._LP_f3WtKPVEvVCG1Uqh5S5ARHSHF7maopdWIbWg7Mw';
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  global: {
+    headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' },
+  },
+});
 const GITHUB_REPO = 'sans242/sans242.github.io';
 const WORKFLOW_FILE = 'sync_garmin.yml';
 
@@ -260,6 +264,7 @@ function formatMonthLabel(k) { const [y,m] = k.split('-'); return ['Jan','Feb','
 // ── Data Loading ──
 async function loadData() {
   try {
+    const cacheBust = `cb=${Date.now()}`;
     const { data, error } = await sb.from('garmin_activities').select('*').order('start_time', { ascending: false });
     if (error) throw error;
 
@@ -562,7 +567,13 @@ async function triggerGarminSync() {
 async function refreshData() {
   const btn = document.getElementById('btn-refresh');
   btn.classList.add('loading'); btn.disabled = true;
-  try { await loadData(); showToast('✅ Data refreshed!', 'success'); }
+  try {
+    allRuns = [];
+    filteredRuns = [];
+    rhrData = [];
+    await loadData();
+    showToast('✅ Data refreshed!', 'success');
+  }
   catch(e) { showToast('❌ Refresh failed', 'error'); }
   finally { btn.classList.remove('loading'); btn.disabled = false; }
 }

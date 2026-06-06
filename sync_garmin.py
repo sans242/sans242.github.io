@@ -1,6 +1,10 @@
 """
 Garmin Connect -> Supabase Sync Script
-Runs via GitHub Actions to pull all running activities and store in Supabase.
+Runs via GitHub Actions to pull all running activities, daily steps, and resting HR,
+then stores them in Supabase.
+
+Uses tokenstore-based auth (garminconnect v0.3.4+) with session persistence
+to avoid hitting Garmin's login rate limits.
 """
 
 import os
@@ -8,13 +12,14 @@ import json
 import sys
 import io
 from datetime import datetime, timedelta
+from pathlib import Path
 
 # Fix encoding for Windows
 if sys.platform == 'win32':
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
-from garminconnect import Garmin
+from garminconnect import Garmin, GarminConnectAuthenticationError, GarminConnectConnectionError
 from supabase import create_client, Client
 
 
@@ -24,16 +29,37 @@ GARMIN_PASSWORD = os.environ.get("GARMIN_PASSWORD")
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 
+TOKENSTORE_PATH = os.environ.get("GARMINTOKENS", os.path.expanduser("~/.garminconnect"))
+
 BATCH_SIZE = 100  # Garmin API page size
 ACTIVITY_TYPES = {"running", "trail_running", "treadmill_running", "track_running"}
+DAILY_STEPS_DAYS = 90  # How many days of step data to sync
 
 
 def login_garmin():
-    """Authenticate with Garmin Connect."""
-    print("[LOGIN] Logging into Garmin Connect...")
+    """Authenticate with Garmin Connect using tokenstore for session persistence."""
+    print(f"[LOGIN] Token store path: {TOKENSTORE_PATH}")
+
+    # Ensure tokenstore directory exists
+    Path(TOKENSTORE_PATH).mkdir(parents=True, exist_ok=True)
+
+    # Try to resume a saved session first
+    try:
+        client = Garmin()
+        client.login(TOKENSTORE_PATH)
+        print("[LOGIN] Resumed session from saved tokens")
+        return client
+    except (GarminConnectAuthenticationError, GarminConnectConnectionError, FileNotFoundError, Exception) as e:
+        print(f"[LOGIN] Could not resume session ({type(e).__name__}: {e}), performing fresh login...")
+
+    # Fresh login with credentials
+    if not GARMIN_EMAIL or not GARMIN_PASSWORD:
+        print("[ERROR] No saved tokens and GARMIN_EMAIL / GARMIN_PASSWORD not set")
+        sys.exit(1)
+
     client = Garmin(GARMIN_EMAIL, GARMIN_PASSWORD)
-    client.login()
-    print("[LOGIN] Login successful")
+    client.login(TOKENSTORE_PATH)
+    print("[LOGIN] Fresh login successful, tokens saved")
     return client
 
 
@@ -170,10 +196,92 @@ def upsert_resting_hr(supabase_client, rhr_data):
     print(f"[RHR] Resting HR sync complete!")
 
 
+def fetch_daily_steps(garmin_client, days=DAILY_STEPS_DAYS):
+    """Fetch daily step counts for the last N days."""
+    print(f"[STEPS] Fetching daily steps for last {days} days...")
+    steps_data = []
+    today = datetime.now().date()
+    start_date = today - timedelta(days=days)
+
+    try:
+        # get_daily_steps returns a list of daily step summaries
+        raw_steps = garmin_client.get_daily_steps(
+            start_date.isoformat(),
+            today.isoformat()
+        )
+
+        if not raw_steps:
+            print("[STEPS] No step data returned from Garmin")
+            return steps_data
+
+        for day_data in raw_steps:
+            # The API returns different structures; handle both
+            cal_date = day_data.get("calendarDate")
+            total = day_data.get("totalSteps", 0)
+            goal = day_data.get("stepGoal") or day_data.get("dailyStepGoal")
+            distance = day_data.get("totalDistance")  # meters
+            calories = day_data.get("totalKilocalories") or day_data.get("totalCalories")
+
+            if cal_date and total and total > 0:
+                steps_data.append({
+                    "date": cal_date,
+                    "total_steps": total,
+                    "step_goal": goal,
+                    "distance": distance,
+                    "calories_total": calories,
+                    "synced_at": datetime.utcnow().isoformat(),
+                })
+
+    except Exception as e:
+        print(f"[STEPS] Error fetching steps: {e}")
+        # Fallback: try day-by-day
+        try:
+            for i in range(days):
+                day = today - timedelta(days=i)
+                day_str = day.isoformat()
+                try:
+                    day_steps = garmin_client.get_steps_data(day_str)
+                    if day_steps:
+                        # Sum up all step intervals for the day
+                        total = sum(s.get("steps", 0) for s in day_steps if isinstance(s, dict))
+                        if total > 0:
+                            steps_data.append({
+                                "date": day_str,
+                                "total_steps": total,
+                                "step_goal": None,
+                                "distance": None,
+                                "calories_total": None,
+                                "synced_at": datetime.utcnow().isoformat(),
+                            })
+                except Exception:
+                    pass
+        except Exception as e2:
+            print(f"[STEPS] Fallback also failed: {e2}")
+
+    print(f"[STEPS] Got {len(steps_data)} days of step data")
+    return steps_data
+
+
+def upsert_daily_steps(supabase_client, steps_data):
+    """Upsert daily steps data to Supabase."""
+    if not steps_data:
+        print("[STEPS] No step data to sync")
+        return
+
+    for i in range(0, len(steps_data), 50):
+        chunk = steps_data[i:i+50]
+        supabase_client.table("garmin_daily_steps").upsert(
+            chunk, on_conflict="date"
+        ).execute()
+        print(f"[STEPS] Upserted {min(i+50, len(steps_data))}/{len(steps_data)}")
+
+    print(f"[STEPS] Daily steps sync complete!")
+
+
 def main():
     # Validate env vars
     missing = []
-    for var in ["GARMIN_EMAIL", "GARMIN_PASSWORD", "SUPABASE_URL", "SUPABASE_KEY"]:
+    for var in ["SUPABASE_URL", "SUPABASE_KEY"]:
         if not os.environ.get(var):
             missing.append(var)
     if missing:
@@ -192,6 +300,10 @@ def main():
     # Fetch & sync resting HR
     rhr_data = fetch_resting_hr(garmin_client)
     upsert_resting_hr(supabase_client, rhr_data)
+
+    # Fetch & sync daily steps
+    steps_data = fetch_daily_steps(garmin_client)
+    upsert_daily_steps(supabase_client, steps_data)
 
 
 if __name__ == "__main__":
