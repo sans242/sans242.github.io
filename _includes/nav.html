@@ -26,12 +26,9 @@
           </li>
         {% else %}
           {% assign is_active = false %}
-          {% assign link_url = link[1] | prepend: "/" %}
-          {% if page.url == link_url %}
+          {% if page.url contains link[1] %}
             {% assign is_active = true %}
           {% elsif page.layout == "post" and link[0] == "Posts" %}
-            {% assign is_active = true %}
-          {% elsif page.layout == "blog" and link[0] == "Posts" %}
             {% assign is_active = true %}
           {% endif %}
           <li class="nav-item {% if is_active %}active{% endif %}">
