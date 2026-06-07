@@ -25,7 +25,16 @@
             </div>
           </li>
         {% else %}
-          <li class="nav-item">
+          {% assign is_active = false %}
+          {% assign link_url = link[1] | prepend: "/" %}
+          {% if page.url == link_url %}
+            {% assign is_active = true %}
+          {% elsif page.layout == "post" and link[0] == "Posts" %}
+            {% assign is_active = true %}
+          {% elsif page.layout == "blog" and link[0] == "Posts" %}
+            {% assign is_active = true %}
+          {% endif %}
+          <li class="nav-item {% if is_active %}active{% endif %}">
             <a class="nav-link" href="{{ link[1] | relative_url }}">{{ link[0] }}</a>
           </li>
         {%- endif -%}

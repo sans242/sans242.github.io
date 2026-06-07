@@ -9,3 +9,19 @@ img {
         transform:scale(1.2);
     }
 }
+
+/* Active Navbar Highlight */
+.navbar-custom .navbar-nav .nav-item.active .nav-link {
+    color: #00E676 !important;
+    position: relative;
+}
+.navbar-custom .navbar-nav .nav-item.active .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 5px;
+    left: 15px;
+    right: 15px;
+    height: 2px;
+    background-color: #00E676;
+    border-radius: 2px;
+}
