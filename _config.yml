@@ -20,7 +20,6 @@ navbar-links:
   Posts: "blog"
   Projects: "projects"
   Running: "running"
-  Steps: "steps"
   Resume: "/assets/docs/cv.pdf"
   #  Resources:
   #  - Beautiful Jekyll: "https://beautifuljekyll.com"
