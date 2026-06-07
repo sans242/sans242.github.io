@@ -7,14 +7,18 @@ layout: page
 {% assign posts = paginator.posts | default: site.posts %}
 
 <style>
-  .posts-list { list-style: none; padding: 0; margin: 0; }
-  .post-item { padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .posts-list { list-style: none; padding: 0; margin: 0; max-width: 800px; transform: translateX(-5%); }
+  .post-item { padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
   .post-item:last-child { border-bottom: none; }
   .post-item a { text-decoration: none; display: block; }
-  .post-item a:hover .post-title { color: #0085A1; }
-  .post-title { font-size: 1.1rem; font-weight: 700; color: #333; margin: 0 0 2px; transition: color 0.2s; }
-  .post-subtitle { font-size: 0.85rem; font-weight: 400; color: #777; margin: 0 0 4px; font-style: italic; }
-  .post-date { font-size: 0.75rem; color: #999; margin: 0; }
+  .post-item a:hover .post-title { color: #00E676; }
+  .post-title { font-size: 1.05rem; font-weight: 700; color: #E0E0E0; margin: 0 0 2px; transition: color 0.2s; }
+  .post-subtitle { font-size: 0.8rem; font-weight: 400; color: #999; margin: 0 0 4px; font-style: italic; }
+  .post-date { font-size: 0.7rem; color: #777; margin: 0; font-family: 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: 0.05em; }
+
+  @media (max-width: 768px) {
+    .posts-list { transform: translateX(0); }
+  }
 </style>
 
 <ul class="posts-list">
