@@ -4,6 +4,120 @@ layout: base
 
 {% include header.html type="post" %}
 
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* Typography Overrides */
+.blog-post {
+  font-family: 'Inter', sans-serif;
+  color: #e0e0e0;
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+.intro-header .page-heading h1 {
+  font-family: 'Playfair Display', serif !important;
+  font-size: 3.5rem !important;
+  color: #fff;
+  line-height: 1.1;
+  margin-bottom: 15px;
+}
+.intro-header .page-heading .page-subheading {
+  font-family: 'Playfair Display', serif !important;
+  color: #aaa;
+  font-size: 1.25rem !important;
+  font-style: italic;
+}
+
+.intro-header .page-heading .post-meta {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 0.8rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 20px;
+}
+
+.blog-post h1, .blog-post h2, .blog-post h3, .blog-post h4 {
+  font-family: 'Playfair Display', serif;
+  color: #fff;
+  margin-top: 2.5rem;
+  margin-bottom: 1.2rem;
+}
+
+.blog-post strong, .blog-post b {
+  color: #fff;
+}
+
+/* Link colors */
+.blog-post a:not(.btn) {
+  color: #00E676;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(0, 230, 118, 0.3);
+  transition: all 0.2s;
+}
+.blog-post a:not(.btn):hover {
+  color: #fff;
+  border-bottom-color: #00E676;
+}
+
+/* Tags styling */
+.blog-tags {
+  margin-top: 50px !important;
+  padding-top: 25px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  display: flex !important;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.blog-tags span {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem !important;
+  color: #888;
+  margin-right: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.blog-tags a {
+  display: inline-block;
+  border: 1px solid rgba(0, 230, 118, 0.3);
+  color: #00E676 !important;
+  background: rgba(0, 230, 118, 0.05);
+  font-size: 0.75rem !important;
+  padding: 6px 14px;
+  border-radius: 20px;
+  text-decoration: none !important;
+  transition: all 0.2s;
+}
+.blog-tags a:hover {
+  background: rgba(0, 230, 118, 0.2);
+  color: #fff !important;
+}
+
+/* Pagination / Next-Prev Posts */
+.blog-pager {
+  margin-top: 40px;
+}
+.blog-pager .page-item .page-link {
+  background: transparent !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  color: #00E676 !important;
+  border-radius: 6px !important;
+  padding: 10px 20px !important;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+}
+.blog-pager .page-item .page-link:hover {
+  border-color: #00E676 !important;
+  background: rgba(0, 230, 118, 0.05) !important;
+  color: #fff !important;
+}
+</style>
+
 <div class="{% if page.full-width %} container-fluid {% else %} container-md {% endif %}">
   <div class="row">
     <div class="{% if page.full-width %} col {% else %} col-xl-8 offset-xl-2 col-lg-10 offset-lg-1 {% endif %}">
