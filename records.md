@@ -431,42 +431,63 @@ function renderTop5Leaderboards(allRuns) {
     candidates.sort((a, b) => a.estimatedTime - b.estimatedTime);
     const top5 = candidates.slice(0, 5);
 
-    if (top5.length > 0) {
-      html += \`
-        <div class="records-table-container" style="margin-bottom: 24px;">
-          <div style="padding: 16px 18px; border-bottom: 1px solid #1e1e2e; background: rgba(255,255,255,0.02); display: flex; align-items: center; gap: 12px;">
-            <div class="pr-distance-badge" style="width:40px;height:40px;min-width:40px;font-size:1rem;background:linear-gradient(135deg, rgba(255,255,255,0.1), transparent);">${rd.icon}</div>
-            <h3 style="margin:0;font-size:1rem;color:#fff;">Top 5 \${rd.name} Runs</h3>
-          </div>
-          <div class="table-scroll">
-            <table class="records-table">
-              <thead>
-                <tr>
-                  <th style="width: 50px;">Rank</th>
-                  <th>Computed Time</th>
-                  <th>Avg Pace</th>
-                  <th>Run Name</th>
-                  <th>Date</th>
-                  <th>Match Type</th>
-                </tr>
-              </thead>
-              <tbody>
-                \${top5.map((rec, i) => \`
-                  <tr>
-                    <td style="color:#888;font-weight:700;font-family:'JetBrains Mono', monospace;">#\${i + 1}</td>
-                    <td class="rt-time">\${msToTimeStr(rec.estimatedTime * 1000)}</td>
-                    <td class="rt-pace">\${paceFromMs(rec.estimatedTime * 1000, rd.meters)}</td>
-                    <td class="rt-run">\${rec.activity_name || 'Run'}</td>
-                    <td class="rt-date">\${formatDate(rec.start_time)}</td>
-                    <td>\${rec.method === 'exact' ? '<span class="pr-garmin-badge" style="color:#69F0AE;border-color:rgba(0,230,118,0.2);background:rgba(0,230,118,0.1);">Exact</span>' : '<span class="pr-garmin-badge" style="color:#FFA726;border-color:rgba(255,167,38,0.2);background:rgba(255,167,38,0.1);">Estimated</span>'}</td>
-                  </tr>
-                \`).join('')}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      \`;
+    const rowsHtml = [];
+    for (let i = 0; i < 5; i++) {
+      if (i < top5.length) {
+        const rec = top5[i];
+        const badge = rec.method === 'exact' 
+          ? '<span class="pr-garmin-badge" style="color:#69F0AE;border-color:rgba(0,230,118,0.2);background:rgba(0,230,118,0.1);">Exact</span>' 
+          : '<span class="pr-garmin-badge" style="color:#FFA726;border-color:rgba(255,167,38,0.2);background:rgba(255,167,38,0.1);">Estimated</span>';
+        
+        rowsHtml.push(`
+          <tr>
+            <td style="color:#888;font-weight:700;font-family:'JetBrains Mono', monospace;">#${i + 1}</td>
+            <td class="rt-time">${msToTimeStr(rec.estimatedTime * 1000)}</td>
+            <td class="rt-pace">${paceFromMs(rec.estimatedTime * 1000, rd.meters)}</td>
+            <td class="rt-run">${rec.activity_name || 'Run'}</td>
+            <td class="rt-date">${formatDate(rec.start_time)}</td>
+            <td>${badge}</td>
+          </tr>
+        `);
+      } else {
+        rowsHtml.push(`
+          <tr>
+            <td style="color:#444;font-weight:700;font-family:'JetBrains Mono', monospace;">#${i + 1}</td>
+            <td class="rt-time" style="color:#444;">N/A</td>
+            <td class="rt-pace" style="color:#444;">N/A</td>
+            <td class="rt-run" style="color:#444;">—</td>
+            <td class="rt-date" style="color:#444;">—</td>
+            <td style="color:#444;">—</td>
+          </tr>
+        `);
+      }
     }
+
+    html += `
+      <div class="records-table-container" style="margin-bottom: 24px;">
+        <div style="padding: 16px 18px; border-bottom: 1px solid #1e1e2e; background: rgba(255,255,255,0.02); display: flex; align-items: center; gap: 12px;">
+          <div class="pr-distance-badge" style="width:40px;height:40px;min-width:40px;font-size:1rem;background:linear-gradient(135deg, rgba(255,255,255,0.1), transparent);">${rd.icon}</div>
+          <h3 style="margin:0;font-size:1rem;color:#fff;">Top 5 ${rd.name} Runs</h3>
+        </div>
+        <div class="table-scroll">
+          <table class="records-table">
+            <thead>
+              <tr>
+                <th style="width: 50px;">Rank</th>
+                <th>Computed Time</th>
+                <th>Avg Pace</th>
+                <th>Run Name</th>
+                <th>Date</th>
+                <th>Match Type</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHtml.join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
   });
 
   document.getElementById('top5-showcase').innerHTML = html;
