@@ -203,7 +203,14 @@ subtitle: Official Garmin Personal Bests
     </div>
 
     <div class="section-header" style="margin-top:40px;"><h2>🏆 All Garmin Records</h2><div class="section-line"></div></div>
-    <div class="raw-records-grid" id="raw-records-grid"></div>
+    <div class="raw-records-grid" id="raw-records-grid" style="margin-bottom: 40px;"></div>
+
+    <div class="section-header" style="margin-top:40px;"><h2>⏱️ Computed Top 5 Performances</h2><div class="section-line"></div></div>
+    <div class="info-box" style="margin-bottom: 20px;">
+      <span class="info-box-icon">💡</span>
+      <div>These top 5 leaderboards are <strong>computed from all your running activities</strong>. "Exact Match" means the run distance was close to the target distance. "Estimated" means it was calculated from the average pace of a longer run.</div>
+    </div>
+    <div id="top5-showcase"></div>
 
     <div class="empty-state" id="empty-state" style="display:none;">
       <div class="empty-state-icon">🏅</div>
@@ -391,15 +398,95 @@ function renderRawRecords(otherRecords) {
   }).join('');
 }
 
+function renderTop5Leaderboards(allRuns) {
+  let html = '';
+
+  const TOP5_DISTANCES = [
+    { key: '1k', name: '1K', meters: 1000, theme: 'emerald', icon: '🟢', tolerance: 0.15 },
+    { key: '1mile', name: '1 Mile', meters: 1609.34, theme: 'gold', icon: '🥇', tolerance: 0.15 },
+    { key: '2k', name: '2K', meters: 2000, theme: 'sapphire', icon: '🔵', tolerance: 0.15 },
+    { key: '5k', name: '5K', meters: 5000, theme: 'amber', icon: '🟠', tolerance: 0.15 },
+    { key: '10k', name: '10K', meters: 10000, theme: 'teal', icon: '🏃', tolerance: 0.15 },
+    { key: 'half_marathon', name: 'Half Marathon', meters: 21097.5, theme: 'amethyst', icon: '🟣', tolerance: 0.15 },
+    { key: 'marathon', name: 'Marathon', meters: 42195, theme: 'ruby', icon: '🔴', tolerance: 0.15 }
+  ];
+
+  TOP5_DISTANCES.forEach(rd => {
+    const minDist = rd.meters * (1 - rd.tolerance);
+    const maxDist = rd.meters * (1 + rd.tolerance);
+
+    const candidates = [];
+    allRuns.forEach(r => {
+      if (!r.duration || !r.distance || r.duration <= 0 || !r.avg_speed || r.avg_speed <= 0) return;
+      
+      if (r.distance >= minDist && r.distance <= maxDist) {
+        const estimatedTime = rd.meters / r.avg_speed;
+        candidates.push({ ...r, estimatedTime, method: 'exact' });
+      } else if (r.distance >= rd.meters) {
+        const estimatedTime = rd.meters / r.avg_speed;
+        candidates.push({ ...r, estimatedTime, method: 'estimated' });
+      }
+    });
+
+    candidates.sort((a, b) => a.estimatedTime - b.estimatedTime);
+    const top5 = candidates.slice(0, 5);
+
+    if (top5.length > 0) {
+      html += \`
+        <div class="records-table-container" style="margin-bottom: 24px;">
+          <div style="padding: 16px 18px; border-bottom: 1px solid #1e1e2e; background: rgba(255,255,255,0.02); display: flex; align-items: center; gap: 12px;">
+            <div class="pr-distance-badge" style="width:40px;height:40px;min-width:40px;font-size:1rem;background:linear-gradient(135deg, rgba(255,255,255,0.1), transparent);">${rd.icon}</div>
+            <h3 style="margin:0;font-size:1rem;color:#fff;">Top 5 \${rd.name} Runs</h3>
+          </div>
+          <div class="table-scroll">
+            <table class="records-table">
+              <thead>
+                <tr>
+                  <th style="width: 50px;">Rank</th>
+                  <th>Computed Time</th>
+                  <th>Avg Pace</th>
+                  <th>Run Name</th>
+                  <th>Date</th>
+                  <th>Match Type</th>
+                </tr>
+              </thead>
+              <tbody>
+                \${top5.map((rec, i) => \`
+                  <tr>
+                    <td style="color:#888;font-weight:700;font-family:'JetBrains Mono', monospace;">#\${i + 1}</td>
+                    <td class="rt-time">\${msToTimeStr(rec.estimatedTime * 1000)}</td>
+                    <td class="rt-pace">\${paceFromMs(rec.estimatedTime * 1000, rd.meters)}</td>
+                    <td class="rt-run">\${rec.activity_name || 'Run'}</td>
+                    <td class="rt-date">\${formatDate(rec.start_time)}</td>
+                    <td>\${rec.method === 'exact' ? '<span class="pr-garmin-badge" style="color:#69F0AE;border-color:rgba(0,230,118,0.2);background:rgba(0,230,118,0.1);">Exact</span>' : '<span class="pr-garmin-badge" style="color:#FFA726;border-color:rgba(255,167,38,0.2);background:rgba(255,167,38,0.1);">Estimated</span>'}</td>
+                  </tr>
+                \`).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      \`;
+    }
+  });
+
+  document.getElementById('top5-showcase').innerHTML = html;
+}
+
 // ═══════════════════════════════════════
 //  DATA LOADING
 // ═══════════════════════════════════════
 async function loadData() {
   try {
-    const { data, error } = await sb.from('garmin_personal_records').select('*');
-    if (error) throw error;
+    const [prsRes, runsRes] = await Promise.all([
+      sb.from('garmin_personal_records').select('*'),
+      sb.from('garmin_activities').select('*').eq('activity_type', 'running')
+    ]);
+    
+    if (prsRes.error) throw prsRes.error;
+    if (runsRes.error) throw runsRes.error;
 
-    allPRs = data || [];
+    allPRs = prsRes.data || [];
+    const allRuns = runsRes.data || [];
 
     document.getElementById('connection-badge').className = 'connection-badge online';
     document.getElementById('connection-text').textContent = 'Cloud Synced';
@@ -450,6 +537,7 @@ async function loadData() {
     renderPRShowcase(distanceRecords);
     renderRecordsTable(distanceRecords);
     renderRawRecords(otherRecords);
+    renderTop5Leaderboards(allRuns);
   } catch (err) {
     console.error('Load error:', err);
     document.getElementById('connection-badge').className = 'connection-badge offline';
