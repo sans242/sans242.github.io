@@ -233,6 +233,10 @@ subtitle: Garmin Running & Steps Dashboard
         <span class="btn-spinner"></span>
         Refresh Data
       </button>
+      <a href="/records" class="btn-sync secondary" style="text-decoration:none;">
+        <span class="btn-icon">🏅</span>
+        Race Records
+      </a>
     </div>
   </div>
 

@@ -278,6 +278,112 @@ def upsert_daily_steps(supabase_client, steps_data):
     print(f"[STEPS] Daily steps sync complete!")
 
 
+def fetch_personal_records(garmin_client):
+    """Fetch official personal records (PRs) from Garmin Connect."""
+    print("[PR] Fetching personal records...")
+    pr_rows = []
+
+    try:
+        raw_prs = garmin_client.get_personal_record()
+
+        if not raw_prs:
+            print("[PR] No personal records returned from Garmin")
+            return pr_rows
+
+        # The API returns a list of record categories, each may have sub-records
+        for record_group in raw_prs:
+            pr_type_key = record_group.get("typeKey") or record_group.get("prTypeLabelKey") or "unknown"
+            records_list = record_group.get("personalRecords") or []
+
+            if not isinstance(records_list, list):
+                # If it's a single dict, wrap it
+                records_list = [records_list] if isinstance(records_list, dict) else []
+
+            for pr in records_list:
+                if not isinstance(pr, dict):
+                    continue
+
+                # Extract the PR value — could be under various keys
+                pr_value = pr.get("prValue") or pr.get("value")
+                activity_id = pr.get("activityId")
+                pr_date = pr.get("prStartTimeGMT") or pr.get("prStartTimeLocal") or pr.get("date")
+
+                if pr_value is None:
+                    continue
+
+                pr_rows.append({
+                    "pr_type": pr_type_key,
+                    "value_ms": int(pr_value) if pr_value else None,
+                    "activity_id": activity_id,
+                    "activity_name": pr.get("activityName"),
+                    "activity_type": pr.get("activityType"),
+                    "pr_date": pr_date,
+                    "raw_json": json.dumps(pr, default=str),
+                    "synced_at": datetime.utcnow().isoformat(),
+                })
+
+    except Exception as e:
+        print(f"[PR] Error fetching personal records: {e}")
+        # Fallback: try the raw connectapi directly
+        try:
+            display_name = garmin_client.display_name
+            if display_name:
+                raw = garmin_client.connectapi(
+                    f"/personalrecord-service/personalrecord/prs/{display_name}"
+                )
+                if raw and isinstance(raw, list):
+                    for record_group in raw:
+                        pr_type_key = record_group.get("typeKey") or record_group.get("prTypeLabelKey") or "unknown"
+                        records_list = record_group.get("personalRecords") or []
+
+                        if not isinstance(records_list, list):
+                            records_list = [records_list] if isinstance(records_list, dict) else []
+
+                        for pr in records_list:
+                            if not isinstance(pr, dict):
+                                continue
+                            pr_value = pr.get("prValue") or pr.get("value")
+                            if pr_value is None:
+                                continue
+                            pr_rows.append({
+                                "pr_type": pr_type_key,
+                                "value_ms": int(pr_value) if pr_value else None,
+                                "activity_id": pr.get("activityId"),
+                                "activity_name": pr.get("activityName"),
+                                "activity_type": pr.get("activityType"),
+                                "pr_date": pr.get("prStartTimeGMT") or pr.get("prStartTimeLocal") or pr.get("date"),
+                                "raw_json": json.dumps(pr, default=str),
+                                "synced_at": datetime.utcnow().isoformat(),
+                            })
+        except Exception as e2:
+            print(f"[PR] Fallback also failed: {e2}")
+
+    print(f"[PR] Got {len(pr_rows)} personal records")
+    return pr_rows
+
+
+def upsert_personal_records(supabase_client, pr_data):
+    """Upsert personal records to Supabase."""
+    if not pr_data:
+        print("[PR] No personal records to sync")
+        return
+
+    # Clear existing records and insert fresh ones (PRs change over time)
+    try:
+        supabase_client.table("garmin_personal_records").delete().neq("pr_type", "__impossible__").execute()
+    except Exception:
+        pass  # Table might not exist yet
+
+    for i in range(0, len(pr_data), 50):
+        chunk = pr_data[i:i+50]
+        supabase_client.table("garmin_personal_records").upsert(
+            chunk, on_conflict="pr_type"
+        ).execute()
+        print(f"[PR] Upserted {min(i+50, len(pr_data))}/{len(pr_data)}")
+
+    print(f"[PR] Personal records sync complete!")
+
+
 def main():
     # Validate env vars
     missing = []
@@ -304,6 +410,10 @@ def main():
     # Fetch & sync daily steps
     steps_data = fetch_daily_steps(garmin_client)
     upsert_daily_steps(supabase_client, steps_data)
+
+    # Fetch & sync personal records
+    pr_data = fetch_personal_records(garmin_client)
+    upsert_personal_records(supabase_client, pr_data)
 
 
 if __name__ == "__main__":
