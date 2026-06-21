@@ -208,7 +208,7 @@ subtitle: Official Garmin Personal Bests
     <div class="section-header" style="margin-top:40px;"><h2>⏱️ Computed Top 5 Performances</h2><div class="section-line"></div></div>
     <div class="info-box" style="margin-bottom: 20px;">
       <span class="info-box-icon">💡</span>
-      <div>These top 5 leaderboards are <strong>computed from all your running activities</strong>. "Exact Match" means the run distance was close to the target distance. "Estimated" means it was calculated from the average pace of a longer run.</div>
+      <div>These top 5 leaderboards are <strong>computed from all your running activities</strong>. Only runs that closely match the target distance are included.</div>
     </div>
     <div id="top5-showcase"></div>
 
@@ -422,9 +422,6 @@ function renderTop5Leaderboards(allRuns) {
       if (r.distance >= minDist && r.distance <= maxDist) {
         const estimatedTime = rd.meters / r.avg_speed;
         candidates.push({ ...r, estimatedTime, method: 'exact' });
-      } else if (r.distance >= rd.meters) {
-        const estimatedTime = rd.meters / r.avg_speed;
-        candidates.push({ ...r, estimatedTime, method: 'estimated' });
       }
     });
 
@@ -435,9 +432,6 @@ function renderTop5Leaderboards(allRuns) {
     for (let i = 0; i < 5; i++) {
       if (i < top5.length) {
         const rec = top5[i];
-        const badge = rec.method === 'exact' 
-          ? '<span class="pr-garmin-badge" style="color:#69F0AE;border-color:rgba(0,230,118,0.2);background:rgba(0,230,118,0.1);">Exact</span>' 
-          : '<span class="pr-garmin-badge" style="color:#FFA726;border-color:rgba(255,167,38,0.2);background:rgba(255,167,38,0.1);">Estimated</span>';
         
         rowsHtml.push(`
           <tr>
@@ -446,7 +440,6 @@ function renderTop5Leaderboards(allRuns) {
             <td class="rt-pace">${paceFromMs(rec.estimatedTime * 1000, rd.meters)}</td>
             <td class="rt-run">${rec.activity_name || 'Run'}</td>
             <td class="rt-date">${formatDate(rec.start_time)}</td>
-            <td>${badge}</td>
           </tr>
         `);
       } else {
@@ -457,7 +450,6 @@ function renderTop5Leaderboards(allRuns) {
             <td class="rt-pace" style="color:#444;">N/A</td>
             <td class="rt-run" style="color:#444;">—</td>
             <td class="rt-date" style="color:#444;">—</td>
-            <td style="color:#444;">—</td>
           </tr>
         `);
       }
@@ -478,7 +470,6 @@ function renderTop5Leaderboards(allRuns) {
                 <th>Avg Pace</th>
                 <th>Run Name</th>
                 <th>Date</th>
-                <th>Match Type</th>
               </tr>
             </thead>
             <tbody>
