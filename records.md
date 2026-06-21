@@ -372,7 +372,8 @@ function renderRawRecords(otherRecords) {
     const config = rec._otherConfig;
     let valueStr = '—';
     if (config && config.unit === 'distance') {
-      valueStr = rec.value_ms ? (rec.value_ms / 100000).toFixed(2) + ' km' : '—'; // Garmin stores distance in cm
+      // value_ms is stored as meters * 1000. To get km, divide by 1,000,000.
+      valueStr = rec.value_ms ? (rec.value_ms / 1000000).toFixed(2) + ' km' : '—';
     } else {
       valueStr = msToTimeStr(rec.value_ms);
     }
