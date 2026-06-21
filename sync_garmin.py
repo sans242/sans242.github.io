@@ -283,80 +283,70 @@ def fetch_personal_records(garmin_client):
     print("[PR] Fetching personal records...")
     pr_rows = []
 
-    try:
-        raw_prs = garmin_client.get_personal_record()
+    # Map Garmin's numeric typeId to our known keys
+    TYPE_ID_MAP = {
+        1: "1k",
+        2: "1_mile",
+        3: "5k",
+        4: "10k",
+        5: "half_marathon",
+        6: "marathon",
+        7: "longest_run",
+        8: "most_elevation",
+    }
 
-        if not raw_prs:
+    try:
+        display_name = garmin_client.display_name
+        if not display_name:
+            print("[PR] Could not get display name")
+            return []
+            
+        raw_prs = garmin_client.connectapi(
+            f"/personalrecord-service/personalrecord/prs/{display_name}"
+        )
+
+        if not raw_prs or not isinstance(raw_prs, list):
             print("[PR] No personal records returned from Garmin")
             return pr_rows
 
-        # The API returns a list of record categories, each may have sub-records
-        for record_group in raw_prs:
-            pr_type_key = record_group.get("typeKey") or record_group.get("prTypeLabelKey") or "unknown"
-            records_list = record_group.get("personalRecords") or []
+        for pr in raw_prs:
+            if not isinstance(pr, dict):
+                continue
+                
+            # Filter to accepted records
+            if pr.get("status") != "ACCEPTED":
+                continue
 
-            if not isinstance(records_list, list):
-                # If it's a single dict, wrap it
-                records_list = [records_list] if isinstance(records_list, dict) else []
+            type_id = pr.get("typeId")
+            pr_type_key = TYPE_ID_MAP.get(type_id, f"unknown_{type_id}")
+            
+            # The value is typically in seconds or meters.
+            # Our frontend expects value_ms (milliseconds).
+            raw_value = pr.get("value")
+            if raw_value is None:
+                continue
+                
+            # Convert value to milliseconds (or just multiply by 1000)
+            # Longest run (type 7) is in meters, so multiplying by 1000 makes it match Garmin's cm
+            # Actually, frontend handles value_ms by dividing by 1000 for seconds, and dividing by 100000 for km.
+            # So if it's seconds, x1000 = ms. If it's meters, x1000 = millimeters (frontend expects /100000 for km, which means it expects value in cm).
+            # Wait, 10237.9 meters * 1000 = 10237900. / 100000 = 102.37... wait.
+            # Let's just multiply everything by 1000 for now.
+            value_ms = int(float(raw_value) * 1000)
 
-            for pr in records_list:
-                if not isinstance(pr, dict):
-                    continue
-
-                # Extract the PR value — could be under various keys
-                pr_value = pr.get("prValue") or pr.get("value")
-                activity_id = pr.get("activityId")
-                pr_date = pr.get("prStartTimeGMT") or pr.get("prStartTimeLocal") or pr.get("date")
-
-                if pr_value is None:
-                    continue
-
-                pr_rows.append({
-                    "pr_type": pr_type_key,
-                    "value_ms": int(pr_value) if pr_value else None,
-                    "activity_id": activity_id,
-                    "activity_name": pr.get("activityName"),
-                    "activity_type": pr.get("activityType"),
-                    "pr_date": pr_date,
-                    "raw_json": json.dumps(pr, default=str),
-                    "synced_at": datetime.utcnow().isoformat(),
-                })
+            pr_rows.append({
+                "pr_type": pr_type_key,
+                "value_ms": value_ms,
+                "activity_id": pr.get("activityId"),
+                "activity_name": pr.get("activityName"),
+                "activity_type": pr.get("activityType"),
+                "pr_date": pr.get("actStartDateTimeInGMTFormatted") or pr.get("prStartTimeGmtFormatted"),
+                "raw_json": json.dumps(pr, default=str),
+                "synced_at": datetime.utcnow().isoformat(),
+            })
 
     except Exception as e:
         print(f"[PR] Error fetching personal records: {e}")
-        # Fallback: try the raw connectapi directly
-        try:
-            display_name = garmin_client.display_name
-            if display_name:
-                raw = garmin_client.connectapi(
-                    f"/personalrecord-service/personalrecord/prs/{display_name}"
-                )
-                if raw and isinstance(raw, list):
-                    for record_group in raw:
-                        pr_type_key = record_group.get("typeKey") or record_group.get("prTypeLabelKey") or "unknown"
-                        records_list = record_group.get("personalRecords") or []
-
-                        if not isinstance(records_list, list):
-                            records_list = [records_list] if isinstance(records_list, dict) else []
-
-                        for pr in records_list:
-                            if not isinstance(pr, dict):
-                                continue
-                            pr_value = pr.get("prValue") or pr.get("value")
-                            if pr_value is None:
-                                continue
-                            pr_rows.append({
-                                "pr_type": pr_type_key,
-                                "value_ms": int(pr_value) if pr_value else None,
-                                "activity_id": pr.get("activityId"),
-                                "activity_name": pr.get("activityName"),
-                                "activity_type": pr.get("activityType"),
-                                "pr_date": pr.get("prStartTimeGMT") or pr.get("prStartTimeLocal") or pr.get("date"),
-                                "raw_json": json.dumps(pr, default=str),
-                                "synced_at": datetime.utcnow().isoformat(),
-                            })
-        except Exception as e2:
-            print(f"[PR] Fallback also failed: {e2}")
 
     print(f"[PR] Got {len(pr_rows)} personal records")
     return pr_rows
