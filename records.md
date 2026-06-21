@@ -478,8 +478,8 @@ function renderTop5Leaderboards(allRuns) {
 async function loadData() {
   try {
     const [prsRes, runsRes] = await Promise.all([
-      sb.from('garmin_personal_records').select('*'),
-      sb.from('garmin_activities').select('*').eq('activity_type', 'running')
+      sb.from('garmin_personal_records').select('pr_type, value_ms, activity_id, activity_name, pr_date, synced_at'),
+      sb.from('garmin_activities').select('activity_name, start_time, duration, distance, avg_speed').eq('activity_type', 'running')
     ]);
     
     if (prsRes.error) throw prsRes.error;
