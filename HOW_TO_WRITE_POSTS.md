@@ -4,7 +4,7 @@ Since the design, layout, and styling are fully automated, you only ever need to
 
 ## 1. How to Edit an Existing Post
 1. Open the folder `D:\Antigravity\_posts` on your computer using a text editor (like VS Code, Notepad, or Obsidian).
-2. Open the file you want to edit (e.g., `2026-06-07-gorakh-dhanda.md`).
+2. Open the file you want to edit (e.g., `2026-06-07-my-essay-title.md`).
 3. Scroll past the `---` block at the top and just edit the text exactly like you would in a Word document.
 4. Save the file.
 5. Open your terminal in `D:\Antigravity` and push the changes to GitHub:
