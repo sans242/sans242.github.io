@@ -3,7 +3,6 @@ layout: post
 title: "A cool site to checkout"
 subtitle: "Interactive visual explanation of Image Kernels"
 date: 2026-09-24
-tags: [technology, interactive]
 ---
 
 Here is an awesome interactive site to explore and visualize how image kernels work:

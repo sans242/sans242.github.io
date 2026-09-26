@@ -59,21 +59,6 @@ layout: page
   margin: 6px 0 0 0;
   line-height: 1.5;
 }
-
-.post-item-tags {
-  margin-top: 10px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.post-tag {
-  font-size: 0.75rem;
-  color: #aaa;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 2px 8px;
-  border-radius: 4px;
 }
 </style>
 
@@ -88,13 +73,6 @@ layout: page
       </div>
       {% if post.subtitle %}
         <p class="post-item-subtitle">{{ post.subtitle }}</p>
-      {% endif %}
-      {% if post.tags.size > 0 %}
-        <div class="post-item-tags">
-          {% for tag in post.tags %}
-            <span class="post-tag">#{{ tag }}</span>
-          {% endfor %}
-        </div>
       {% endif %}
     </article>
   {% endfor %}

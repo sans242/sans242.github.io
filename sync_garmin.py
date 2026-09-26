@@ -23,6 +23,20 @@ from garminconnect import Garmin, GarminConnectAuthenticationError, GarminConnec
 from supabase import create_client, Client
 
 
+# --- Load .env if present ---
+env_file = Path(__file__).parent / ".env"
+if env_file.exists():
+    with open(env_file, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                k, v = line.split("=", 1)
+                k = k.strip()
+                v = v.strip()
+                while (v.startswith('"') and v.endswith('"')) or (v.startswith("'") and v.endswith("'")):
+                    v = v[1:-1].strip()
+                os.environ[k] = v
+
 # --- Config ---
 GARMIN_EMAIL = os.environ.get("GARMIN_EMAIL")
 GARMIN_PASSWORD = os.environ.get("GARMIN_PASSWORD")
@@ -41,7 +55,8 @@ def login_garmin():
     print(f"[LOGIN] Token store path: {TOKENSTORE_PATH}")
 
     # Ensure tokenstore directory exists
-    Path(TOKENSTORE_PATH).mkdir(parents=True, exist_ok=True)
+    token_dir = Path(TOKENSTORE_PATH)
+    token_dir.mkdir(parents=True, exist_ok=True)
 
     # Try to resume a saved session first
     try:
@@ -52,9 +67,20 @@ def login_garmin():
     except (GarminConnectAuthenticationError, GarminConnectConnectionError, FileNotFoundError, Exception) as e:
         print(f"[LOGIN] Could not resume session ({type(e).__name__}: {e}), performing fresh login...")
 
+    # Clear expired tokens so garminconnect doesn't re-read broken tokens
+    import shutil
+    try:
+        if token_dir.is_dir():
+            shutil.rmtree(token_dir)
+        elif token_dir.exists():
+            token_dir.unlink()
+        token_dir.mkdir(parents=True, exist_ok=True)
+    except Exception as clear_err:
+        print(f"[LOGIN] Warning: Failed to clear old tokens: {clear_err}")
+
     # Fresh login with credentials
     if not GARMIN_EMAIL or not GARMIN_PASSWORD:
-        print("[ERROR] No saved tokens and GARMIN_EMAIL / GARMIN_PASSWORD not set")
+        print("[ERROR] No valid saved tokens and GARMIN_EMAIL / GARMIN_PASSWORD not set")
         sys.exit(1)
 
     client = Garmin(GARMIN_EMAIL, GARMIN_PASSWORD)
